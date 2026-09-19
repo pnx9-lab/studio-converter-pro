@@ -1,0 +1,27 @@
+{
+  "name": "studio-converter-pro",
+  "version": "5.1.0",
+  "description": "Studio Converter Pro Suite",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.0"
+  },
+  "build": {
+    "appId": "com.studioconverter.pro",
+    "productName": "Studio Converter Pro",
+    "win": {
+      "target": "nsis",
+      "icon": "icon-512.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

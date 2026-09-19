@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Studio Converter Pro Suite v5.1.0</title>
+    
+    <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+
+    <script>
+        if (window.innerWidth <= 768) document.documentElement.className += ' mobile-app';
+    </script>
+</head>
+<body>
+
+    <!-- POPUP PERMESSO NOTIFICHE -->
+    <div id="notification-permission-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div style="font-size: 40px; margin-bottom: 10px;">🔔</div>
+            <h3 style="margin: 0 0 10px 0;">Attiva le Notifiche</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Vuoi ricevere avvisi sugli aggiornamenti?</p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeNotificationModal(false)" class="btn-reset" style="flex:1;">No Grazie</button>
+                <button onclick="requestNotificationPermission()" class="btn-convert" style="flex:1;">Attiva</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="main-nav">
+        <div class="nav-brand">⚡ Studio Pro</div>
+        <div class="nav-links">
+            <div class="nav-item active" onclick="switchTab('home')" id="nav-home"><span class="nav-icon">🏠</span><span class="nav-text">Home</span></div>
+            <div class="nav-item" onclick="switchTab('img')" id="nav-img"><span class="nav-icon">🖼️</span><span class="nav-text">Img</span></div>
+            <div class="nav-item" onclick="switchTab('video')" id="nav-video"><span class="nav-icon">🎬</span><span class="nav-text">Video</span></div>
+            <div class="nav-item" onclick="switchTab('audio')" id="nav-audio"><span class="nav-icon">🎵</span><span class="nav-text">Audio</span></div>
+            <div class="nav-item" onclick="switchTab('auth')" id="nav-auth"><span class="nav-icon">👤</span><span class="nav-text" id="authLabel">Login</span></div>
+        </div>
+    </nav>
+
+    <!-- HOME -->
+    <section id="tab-home" class="tab-content active">
+        <div class="hero-section">
+            <h1 style="font-size: 32px; margin-bottom: 10px;">Studio Converter Suite</h1>
+            <p class="subtitle">Tutti i formati. Immagini, Video, Audio. Zero limiti.</p>
+            <div class="features-grid">
+                <div class="feature-card" onclick="switchTab('img')"><div class="f-icon">🖼️</div><h3>Immagini</h3><p>JPG, PNG, WEBP, AVIF, ICO, PDF.</p></div>
+                <div class="feature-card" onclick="switchTab('video')"><div class="f-icon">🎬</div><h3>Video</h3><p>MP4, WEBM, MOV, GIF, MKV, AVI.</p></div>
+                <div class="feature-card" onclick="switchTab('audio')"><div class="f-icon">🎵</div><h3>Audio</h3><p>MP3, WAV, OGG, AAC, FLAC, M4A.</p></div>
+            </div>
+            <button onclick="checkForUpdates(true)" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 12px;">🔍 Controlla Aggiornamenti</button>
+            <a href="http://www.mediafire.com/file/utp8zbyq2kn3l35/Studio_Converter_Pro-win32-x64.7z" download="Studio_Converter_Pro-win32-x64.7z" style="margin-top: 15px; display: inline-block; background: #6366f1; color: white; padding: 12px 28px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: bold;">⬇️ Scarica Desktop App</a>
+            <div id="news-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+                <h3 style="margin: 0 0 15px 0; font-size: 18px;">📢 Novità</h3>
+                <div id="news-list"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- IMG -->
+    <section id="tab-img" class="tab-content">
+        <h2 style="text-align:center; margin-top:10px;">🖼️ Studio Immagini</h2>
+        <div class="main-card">
+            <div class="dropzone" id="dz-img">
+                <div class="dropzone-icon" id="dzIcon-img">📂</div>
+                <div class="dropzone-title" id="dzTitle-img">Seleziona Immagine</div>
+                <div class="dropzone-sub" id="dzSub-img">Trascina qui o clicca</div>
+                <input type="file" id="fileInput-img" hidden accept="image/*">
+                <img id="previewImg" style="display:none; max-width:100%; max-height:150px; border-radius:12px; margin-top:15px;">
+            </div>
+            <div class="options" id="optionsPanel-img" style="opacity:0.5; pointer-events:none;">
+                <label>Formato Output</label>
+                <select id="formatSelect-img">
+                    <option value="png">PNG</option><option value="jpeg">JPG / JPEG</option><option value="webp">WEBP</option>
+                    <option value="avif">AVIF</option><option value="bmp">BMP</option><option value="ico">ICO (Icona)</option><option value="pdf">PDF Documento</option>
+                </select>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <div style="flex:1;"><label style="margin-top:0">Larghezza</label><input type="number" id="widthInput" placeholder="Auto"></div>
+                    <div style="flex:1;"><label style="margin-top:0">Altezza</label><input type="number" id="heightInput" placeholder="Auto"></div>
+                </div>
+                <label style="display:flex; align-items:center; gap:8px; text-transform:none; margin-top:15px;">
+                    <input type="checkbox" id="keepRatio" checked style="width:auto; margin:0;"> Mantieni proporzioni
+                </label>
+                <label>Qualità (JPG/WEBP/AVIF)</label>
+                <input type="range" id="qualityRange" min="1" max="100" value="90">
+                <div style="text-align:right; font-size:12px; color:var(--text-muted)">Valore: <span id="qualityValue">90</span>%</div>
+            </div>
+            <div id="progress-container-img" style="display:none; margin:15px 0;">
+                <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="progress-bar-img" style="background:#6366f1; height:100%; width:0%; transition:0.3s;"></div>
+                </div>
+                <div id="progress-text-img" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-reset" id="resetBtn-img" disabled>← Cambia</button>
+                <button class="btn-convert" id="convertBtn-img" disabled>CONVERTI</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIDEO -->
+    <section id="tab-video" class="tab-content">
+        <h2 style="text-align:center; margin-top:10px;">🎬 Video Converter</h2>
+        <div class="main-card">
+            <div class="dropzone" id="dz-video">
+                <div class="dropzone-icon" id="dzIcon-video">🎥</div>
+                <div class="dropzone-title" id="dzTitle-video">Seleziona Video</div>
+                <div class="dropzone-sub" id="dzSub-video">MP4, MOV, WEBM, MKV, AVI...</div>
+                <input type="file" id="fileInput-video" hidden accept="video/*">
+            </div>
+            <div class="options" id="optionsPanel-video" style="opacity:0.5; pointer-events:none;">
+                <label>Converti in</label>
+                <select id="formatSelect-video">
+                    <option value="mp4">MP4 (H.264 - Standard)</option>
+                    <option value="webm">WEBM (VP9 - Web)</option>
+                    <option value="mov">MOV (QuickTime)</option>
+                    <option value="gif">GIF Animata</option>
+                    <option value="avi">AVI (Legacy)</option>
+                    <option value="mkv">MKV (Matroska)</option>
+                    <option value="3gp">3GP (Mobile Vecchio)</option>
+                    <option value="audio-extract">🎵 Estrai Audio (MP3/WAV/FLAC...)</option>
+                </select>
+                <div id="audioFormatContainer-video" style="display:none; margin-top:15px;">
+                    <label>Formato Audio</label>
+                    <select id="audioFormatSelect-video">
+                        <option value="mp3">MP3 (Compresso)</option>
+                        <option value="wav">WAV (Lossless)</option>
+                        <option value="ogg">OGG (Vorbis)</option>
+                        <option value="aac">AAC (iPhone/Android)</option>
+                        <option value="flac">FLAC (Alta Qualità)</option>
+                        <option value="m4a">M4A (Apple)</option>
+                        <option value="webm">WEBM Audio</option>
+                    </select>
+                </div>
+            </div>
+            <div id="progress-container-video" style="display:none; margin-top:20px;">
+                <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="progress-bar-video" style="background:#6366f1; height:100%; width:0%; transition:0.3s;"></div>
+                </div>
+                <div id="progress-text-video" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-reset" id="resetBtn-video" disabled>← Cambia</button>
+                <button class="btn-convert" id="convertBtn-video" disabled>CONVERTI</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUDIO -->
+    <section id="tab-audio" class="tab-content">
+        <h2 style="text-align:center; margin-top:10px;">🎵 Audio Converter</h2>
+        <div class="main-card">
+            <div class="dropzone" id="dz-audio">
+                <div class="dropzone-icon" id="dzIcon-audio">🎧</div>
+                <div class="dropzone-title" id="dzTitle-audio">Seleziona Audio</div>
+                <div class="dropzone-sub" id="dzSub-audio">MP3, WAV, FLAC, OGG, M4A...</div>
+                <input type="file" id="fileInput-audio" hidden accept="audio/*">
+            </div>
+            <div class="options" id="optionsPanel-audio" style="opacity:0.5; pointer-events:none;">
+                <label>Converti in</label>
+                <select id="formatSelect-audio">
+                    <option value="mp3">MP3 (Compresso)</option>
+                    <option value="wav">WAV (Lossless)</option>
+                    <option value="ogg">OGG (Vorbis)</option>
+                    <option value="aac">AAC (iPhone/Android)</option>
+                    <option value="flac">FLAC (Alta Qualità)</option>
+                    <option value="m4a">M4A (Apple)</option>
+                    <option value="webm">WEBM Audio</option>
+                </select>
+            </div>
+            <div id="progress-container-audio" style="display:none; margin-top:20px;">
+                <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="progress-bar-audio" style="background:#ec4899; height:100%; width:0%; transition:0.3s;"></div>
+                </div>
+                <div id="progress-text-audio" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-reset" id="resetBtn-audio" disabled>← Cambia</button>
+                <button class="btn-convert" id="convertBtn-audio" disabled>CONVERTI</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUTH -->
+    <section id="tab-auth" class="tab-content">
+        <div class="auth-card" id="authFormsContainer">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="btnLoginTab" onclick="toggleAuth('login')">Login</button>
+                <button class="auth-tab" id="btnSignupTab" onclick="toggleAuth('signup')">Sign Up</button>
+            </div>
+            <form id="formLogin" class="auth-form">
+                <h2>Bentornato! 👋</h2>
+                <label>Username</label><input type="text" id="loginUser" required>
+                <label>Password</label><input type="password" id="loginPass" required>
+                <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;">ACCEDI</button>
+            </form>
+            <form id="formSignup" class="auth-form" style="display:none;">
+                <h2>Crea Account ✨</h2>
+                <label>Username</label><input type="text" id="signupUser" required>
+                <label>Password</label><input type="password" id="signupPass" required>
+                <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;">REGISTRATI</button>
+            </form>
+            <div id="authMessage" style="margin-top:15px; text-align:center; font-size:14px;"></div>
+        </div>
+        <div class="profile-card" id="profileContainer" style="display:none;">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <h2 id="profileName">User</h2>
+            <p style="color:var(--text-muted); margin-bottom:20px;">Account Pro Suite</p>
+            <button class="btn-logout" onclick="logout()">ESCI</button>
+        </div>
+    </section>
+
+    <!-- UPDATE POPUP -->
+    <div id="update-popup" class="modal-overlay" style="display:none; z-index: 2000;">
+        <div class="modal-card" style="border-color: #6366f1;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🚀</div>
+            <h3 style="margin: 0 0 10px 0;">Nuova Versione Disponibile!</h3>
+            <p id="update-text" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">È uscita la versione <span id="new-version-num"></span>.</p>
+            <button onclick="downloadUpdate()" class="btn-convert" style="width: 100%;">AGGIORNA ORA</button>
+            <button onclick="document.getElementById('update-popup').style.display='none'" style="width: 100%; background: transparent; border: none; color: var(--text-muted); margin-top: 10px; cursor: pointer; font-size: 12px;">Più tardi</button>
+        </div>
+    </div>
+
+<script>
+    const CURRENT_VERSION = "5.1.0";
+    const VERSION_URL = "version.json";
+
+    const NEWS = [
+        { version: "5.1.0", date: "2026-09-19", items: [
+            "✅ Nuovo: Estrazione audio da video (MP3, WAV, FLAC, OGG, AAC, M4A, WEBM)",
+            "✅ Nuovo: App desktop scaricabile (.exe via MediaFire)",
+            "✅ Fix: Cache service worker - ora aggiornamenti automatici",
+            "✅ Fix: Versione unificata 5.1.0 ovunque"
+        ]},
+        { version: "5.0", date: "2026-09-15", items: [
+            "✨ Interfaccia rinnovata con tab Immagini/Video/Audio",
+            "🖼️ Supporto AVIF, WEBP, ICO, PDF per immagini",
+            "🎬 Video: MP4, WEBM, MOV, GIF, MKV, AVI, 3GP",
+            "🎵 Audio: MP3, WAV, FLAC, OGG, AAC, M4A, WEBM",
+            "🔔 Notifiche push e controllo aggiornamenti automatico",
+            "👤 Sistema login/signup locale"
+        ]}
+    ];
+
+    function renderNews() {
+        const container = document.getElementById('news-list');
+        if (!container) return;
+        container.innerHTML = NEWS.map(n => `
+            <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid #6366f1;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                    <strong>v${n.version}</strong><span style="color:var(--text-muted)">${n.date}</span>
+                </div>
+                <ul style="margin:0; padding-left:18px; font-size:13px; color:var(--text-muted);">
+                    ${n.items.map(i => `<li>${i}</li>`).join('')}
+                </ul>
+            </div>
+        `).join('');
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active');
+        document.getElementById('nav-'+t).classList.add('active');
+        if(window.innerWidth <= 768) window.scrollTo(0,0);
+    }
+    function toggleAuth(t) {
+        document.getElementById('formLogin').style.display = t==='login'?'block':'none';
+        document.getElementById('formSignup').style.display = t==='signup'?'block':'none';
+        document.getElementById('btnLoginTab').classList.toggle('active', t==='login');
+        document.getElementById('btnSignupTab').classList.toggle('active', t==='signup');
+    }
+    function updateAuthUI() {
+        const u = localStorage.getItem('loggedInUser');
+        if(u) {
+            document.getElementById('authFormsContainer').style.display='none';
+            document.getElementById('profileContainer').style.display='block';
+            document.getElementById('authLabel').textContent=u;
+            document.getElementById('profileName').textContent=u;
+            document.getElementById('profileAvatar').textContent=u.charAt(0).toUpperCase();
+        } else {
+            document.getElementById('authFormsContainer').style.display='block';
+            document.getElementById('profileContainer').style.display='none';
+            document.getElementById('authLabel').textContent='Login';
+        }
+    }
+    function logout() { localStorage.removeItem('loggedInUser'); updateAuthUI(); }
+    async function hashText(text) {
+        if (window.crypto && crypto.subtle) {
+            const buf = new TextEncoder().encode(text);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+        return text;
+    }
+    document.getElementById('formSignup').onsubmit = async e => {
+        e.preventDefault();
+        const u = document.getElementById('signupUser').value;
+        const p = document.getElementById('signupPass').value;
+        localStorage.setItem('user_' + u, await hashText(p));
+        alert('Creato! Ora login.');
+        toggleAuth('login');
+    };
+    document.getElementById('formLogin').onsubmit = async e => {
+        e.preventDefault();
+        const u = document.getElementById('loginUser').value;
+        const p = document.getElementById('loginPass').value;
+        const stored = localStorage.getItem('user_' + u);
+        if (stored && (stored === await hashText(p) || stored === p)) {
+            localStorage.setItem('loggedInUser', u);
+            updateAuthUI();
+        } else {
+            alert('Errato');
+        }
+    };
+    updateAuthUI();
+
+    // --- NOTIFICHE & AGGIORNAMENTI ---
+    function checkNotificationPermission() {
+        if (!("Notification" in window)) return;
+        const asked = localStorage.getItem('notificationPermissionAsked');
+        if (Notification.permission === "default" && !asked) {
+            setTimeout(() => { document.getElementById('notification-permission-modal').style.display = 'flex'; }, 2000);
+        }
+    }
+    function closeNotificationModal(granted) {
+        document.getElementById('notification-permission-modal').style.display = 'none';
+        localStorage.setItem('notificationPermissionAsked', 'true');
+    }
+    function requestNotificationPermission() {
+        Notification.requestPermission().then(permission => {
+            closeNotificationModal(permission === "granted");
+            if (permission === "granted") {
+                new Notification("Studio Converter Pro", { body: "Notifiche attivate!", icon: "favicon.svg" });
+            }
+        });
+    }
+
+    let latestVersionData = null;
+    async function checkForUpdates(manual = false) {
+        try {
+            const response = await fetch(VERSION_URL + '?t=' + new Date().getTime());
+            const data = await response.json();
+            latestVersionData = data;
+            if (data.version !== CURRENT_VERSION) {
+                document.getElementById('new-version-num').textContent = data.version;
+                document.getElementById('update-popup').style.display = 'flex';
+                if (Notification.permission === "granted") {
+                    const notif = new Notification("🔄 Aggiornamento Disponibile!", { body: `Versione ${data.version} pronta.`, icon: "favicon.svg", tag: "update-notification", requireInteraction: true });
+                    notif.onclick = function() { window.focus(); downloadUpdate(); notif.close(); };
+                }
+            } else { if (manual) alert("Sei già all'ultima versione!"); }
+        } catch (e) { if (manual) alert("Errore controllo aggiornamenti."); }
+    }
+    function downloadUpdate() {
+        if (!latestVersionData || !latestVersionData.download_url) return;
+        localStorage.setItem('lastSeenVersion', latestVersionData.version);
+        document.getElementById('update-popup').style.display = 'none';
+        const url = latestVersionData.download_url;
+        try {
+            const target = new URL(url, window.location.href);
+            if (target.href === window.location.href || !url.trim()) {
+                window.location.reload(true);
+            } else {
+                window.location.href = url;
+            }
+        } catch {
+            window.location.href = url;
+        }
+    }
+    checkNotificationPermission();
+    setInterval(() => checkForUpdates(false), 300000);
+    setTimeout(() => checkForUpdates(false), 3000);
+
+    // --- UTILS & CONVERTERS ---
+    function downloadBlob(b, n) { if (window.api && window.api.saveFile) { const r = new FileReader(); r.onload = () => window.api.saveFile(r.result, n.split('.').pop().toLowerCase()); r.readAsArrayBuffer(b); } else { const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=n; a.click(); URL.revokeObjectURL(u); } }
+    function dataUrlToUint8Array(dataUrl) {
+        const base64 = dataUrl.split(',')[1];
+        const bin = atob(base64);
+        const arr = new Uint8Array(bin.length);
+        for (let i=0; i<bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+    }
+    function canvasToIcoBlob(canvas) {
+        const pngData = dataUrlToUint8Array(canvas.toDataURL('image/png'));
+        const icoHeader = new Uint8Array(6);
+        const view = new DataView(icoHeader.buffer);
+        view.setUint16(0, 0, true);
+        view.setUint16(2, 1, true);
+        view.setUint16(4, 1, true);
+        const entry = new Uint8Array(16);
+        const ev = new DataView(entry.buffer);
+        const w = canvas.width, h = canvas.height;
+        ev.setUint8(0, w === 256 ? 0 : w);
+        ev.setUint8(1, h === 256 ? 0 : h);
+        ev.setUint8(2, 0);
+        ev.setUint8(3, 0);
+        ev.setUint16(4, 1, true);
+        ev.setUint16(6, 32, true);
+        ev.setUint32(8, pngData.length, true);
+        ev.setUint32(12, 22, true);
+        return new Blob([icoHeader, entry, pngData], {type:'image/x-icon'});
+    }
+
+    // IMG
+    const dzImg=document.getElementById('dz-img'), fImg=document.getElementById('fileInput-img'), pImg=document.getElementById('previewImg'), oImg=document.getElementById('optionsPanel-img');
+    let imgF=null, oW=0, oH=0;
+    document.getElementById('qualityRange').oninput=e=>document.getElementById('qualityValue').textContent=e.target.value;
+    dzImg.onclick=()=>{if(!imgF)fImg.click()};
+    fImg.onchange=e=>{if(e.target.files[0]){imgF=e.target.files[0];const r=new FileReader();r.onload=ev=>{pImg.src=ev.target.result;pImg.style.display='block';document.getElementById('dzIcon-img').style.display='none';document.getElementById('dzTitle-img').textContent=imgF.name;oImg.style.opacity=1;oImg.style.pointerEvents='auto';document.getElementById('resetBtn-img').disabled=false;document.getElementById('convertBtn-img').disabled=false;pImg.onload=()=>{oW=pImg.naturalWidth;oH=pImg.naturalHeight}};r.readAsDataURL(imgF)}};
+    document.getElementById('resetBtn-img').onclick=()=>{imgF=null;fImg.value='';pImg.style.display='none';document.getElementById('dzIcon-img').style.display='block';document.getElementById('dzTitle-img').textContent='Seleziona Immagine';oImg.style.opacity=0.5;oImg.style.pointerEvents='none';document.getElementById('resetBtn-img').disabled=true;document.getElementById('convertBtn-img').disabled=true;document.getElementById('progress-container-img').style.display='none'};
+    document.getElementById('convertBtn-img').onclick=async()=>{
+        const fmt=document.getElementById('formatSelect-img').value, q=document.getElementById('qualityRange').value/100;
+        let w=document.getElementById('widthInput').value||oW, h=document.getElementById('heightInput').value||oH;
+        const btn=document.getElementById('convertBtn-img'), pC=document.getElementById('progress-container-img'), pB=document.getElementById('progress-bar-img'), pT=document.getElementById('progress-text-img');
+        btn.disabled=true; btn.textContent='...'; pC.style.display='block'; pB.style.width='10%'; pT.textContent='Preparazione...';
+        try{
+            if(fmt==='pdf'){
+                pB.style.width='50%'; pT.textContent='Generazione PDF...';
+                const{jsPDF}=window.jspdf;const p=new jsPDF({orientation:w>h?'l':'p',unit:'px',format:[w,h]});p.addImage(pImg.src,'JPEG',0,0,w,h);p.save('out.pdf');
+            } else if(fmt==='ico'){
+                pB.style.width='50%'; pT.textContent='Creazione ICO...';
+                const c=document.createElement('canvas');c.width=32;c.height=32;c.getContext('2d').drawImage(pImg,0,0,32,32);const blob=await canvasToIcoBlob(c);downloadBlob(blob,'icon.ico');
+            } else {
+                pB.style.width='50%'; pT.textContent='Rendering immagine...';
+                const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');if(fmt==='jpeg'){x.fillStyle='#FFF';x.fillRect(0,0,w,h)}x.drawImage(pImg,0,0,w,h);c.toBlob(b=>downloadBlob(b,'out.'+fmt),'image/'+fmt,q);
+            }
+            pB.style.width='100%'; pT.textContent='Fatto!';
+        }catch(e){alert(e); pC.style.display='none'}
+        finally{btn.disabled=false; btn.textContent='CONVERTI'}
+    };
+
+    // AUDIO
+    function setupAudio(){
+        const dz=document.getElementById('dz-audio'), inp=document.getElementById('fileInput-audio'), opt=document.getElementById('optionsPanel-audio');
+        let cur=null;
+        dz.onclick=()=>{if(!cur)inp.click()};
+        inp.onchange=e=>{if(e.target.files[0]){cur=e.target.files[0];document.getElementById('dzIcon-audio').style.display='none';document.getElementById('dzTitle-audio').textContent=cur.name;opt.style.opacity=1;opt.style.pointerEvents='auto';document.getElementById('resetBtn-audio').disabled=false;document.getElementById('convertBtn-audio').disabled=false}};
+        document.getElementById('resetBtn-audio').onclick=()=>{cur=null;inp.value='';document.getElementById('dzIcon-audio').style.display='block';document.getElementById('dzTitle-audio').textContent='Seleziona Audio';opt.style.opacity=0.5;opt.style.pointerEvents='none';document.getElementById('resetBtn-audio').disabled=true;document.getElementById('convertBtn-audio').disabled=true;document.getElementById('progress-container-audio').style.display='none'};
+        document.getElementById('convertBtn-audio').onclick=async()=>{
+            if(!cur)return;
+            const btn=document.getElementById('convertBtn-audio'), pC=document.getElementById('progress-container-audio'), pB=document.getElementById('progress-bar-audio'), pT=document.getElementById('progress-text-audio');
+            const fmt=document.getElementById('formatSelect-audio').value;
+            btn.disabled=true; btn.textContent='...'; pC.style.display='block'; pB.style.width='10%'; pT.textContent='Decodifica...';
+            try{
+                const buf = await cur.arrayBuffer();
+                const ctx = new (window.AudioContext||window.webkitAudioContext)();
+                const audioBuf = await ctx.decodeAudioData(buf);
+                pB.style.width='40%'; pT.textContent='Encoding '+fmt.toUpperCase()+'...';
+                let blob, outExt = fmt;
+                if(fmt==='mp3') blob = new Blob(encodeMP3(audioBuf), {type:'audio/mp3'});
+                else if(fmt==='wav') blob = bufferToWave(audioBuf, audioBuf.length);
+                else {
+                    const mime = getAudioMime(fmt);
+                    if(MediaRecorder.isTypeSupported(mime)) blob = await recordAudioBuffer(audioBuf, mime);
+                    else { pB.style.width='60%'; pT.textContent=fmt.toUpperCase()+' non supportato dal browser. Fallback WAV...'; blob = bufferToWave(audioBuf, audioBuf.length); outExt='wav'; }
+                }
+                downloadBlob(blob, 'converted.'+outExt);
+                pB.style.width='100%'; pT.textContent='Fatto!';
+            }catch(e){alert('Errore: '+e.message); pC.style.display='none'}
+            finally{btn.disabled=false; btn.textContent='CONVERTI'}
+        };
+    }
+    function getAudioMime(f) { if(f==='ogg') return 'audio/ogg; codecs=opus'; if(f==='aac'||f==='m4a') return 'audio/aac'; if(f==='flac') return 'audio/flac'; if(f==='webm') return 'audio/webm; codecs=opus'; return 'audio/wav'; }
+    async function recordAudioBuffer(buffer, mimeType) { return new Promise(resolve => { const ctx = new AudioContext(); const source = ctx.createBufferSource(); source.buffer = buffer; const dest = ctx.createMediaStreamDestination(); source.connect(dest); const recorder = new MediaRecorder(dest.stream, {mimeType: mimeType}); const chunks = []; recorder.ondataavailable = e => chunks.push(e.data); recorder.onstop = () => resolve(new Blob(chunks, {type: mimeType})); recorder.start(); source.start(0); source.onended = () => setTimeout(()=>recorder.stop(), 100); }); }
+    function encodeMP3(buffer) { const ch=buffer.numberOfChannels, sr=buffer.sampleRate, kbps=128; const l=buffer.getChannelData(0), r=ch>1?buffer.getChannelData(1):l; const enc=new lamejs.Mp3Encoder(ch,sr,kbps), data=[], blk=1152; for(let i=0;i<l.length;i+=blk){ const lc=l.subarray(i,i+blk), rc=r.subarray(i,i+blk); const mp3=ch===1?enc.encodeBuffer(lc):enc.encodeBuffer(lc,rc); if(mp3.length>0)data.push(mp3); } const end=enc.flush(); if(end.length>0)data.push(end); return data; }
+    function bufferToWave(abuffer, len) { let nCh=abuffer.numberOfChannels, l=len*nCh*2+44, b=new ArrayBuffer(l), v=new DataView(b), ch=[], i, s, o=0, p=0; function u16(d){v.setUint16(p,d,true);p+=2} function u32(d){v.setUint32(p,d,true);p+=4} u32(0x46464952); u32(l-8); u32(0x45564157); u32(0x20746d66); u32(16); u16(1); u16(nCh); u32(abuffer.sampleRate); u32(abuffer.sampleRate*2*nCh); u16(nCh*2); u16(16); u32(0x61746164); u32(l-p-4); for(i=0;i<nCh;i++)ch.push(abuffer.getChannelData(i)); while(p<len){for(i=0;i<nCh;i++){s=Math.max(-1,Math.min(1,ch[i][p]));s=(0.5+s<0?s*32768:s*32767)|0;v.setInt16(44+o,s,true);o+=2}p++} return new Blob([b],{type:"audio/wav"}); }
+
+    // VIDEO
+    function setupVideo(){
+        const dz=document.getElementById('dz-video'), inp=document.getElementById('fileInput-video'), opt=document.getElementById('optionsPanel-video');
+        let cur=null;
+        dz.onclick=()=>{if(!cur)inp.click()};
+        inp.onchange=e=>{if(e.target.files[0]){cur=e.target.files[0];document.getElementById('dzIcon-video').style.display='none';document.getElementById('dzTitle-video').textContent=cur.name;opt.style.opacity=1;opt.style.pointerEvents='auto';document.getElementById('resetBtn-video').disabled=false;document.getElementById('convertBtn-video').disabled=false}};
+        document.getElementById('resetBtn-video').onclick=()=>{cur=null;inp.value='';document.getElementById('dzIcon-video').style.display='block';document.getElementById('dzTitle-video').textContent='Seleziona Video';opt.style.opacity=0.5;opt.style.pointerEvents='none';document.getElementById('resetBtn-video').disabled=true;document.getElementById('convertBtn-video').disabled=true;document.getElementById('progress-container-video').style.display='none';document.getElementById('audioFormatContainer-video').style.display='none'};
+        document.getElementById('formatSelect-video').onchange=e=>{
+            document.getElementById('audioFormatContainer-video').style.display=e.target.value==='audio-extract'?'block':'none';
+        };
+        document.getElementById('convertBtn-video').onclick=async()=>{
+            if(!cur)return;
+            const btn=document.getElementById('convertBtn-video'), pC=document.getElementById('progress-container-video'), pB=document.getElementById('progress-bar-video'), pT=document.getElementById('progress-text-video');
+            let fmt=document.getElementById('formatSelect-video').value;
+            btn.disabled=true; btn.textContent='...'; pC.style.display='block'; pB.style.width='5%'; pT.textContent='Preparazione...';
+            try{
+                const isAudioExtract = fmt==='audio-extract';
+                const vid=document.createElement('video'); vid.src=URL.createObjectURL(cur); vid.muted=!isAudioExtract;
+                await new Promise(r=>{vid.onloadeddata=r;vid.load()});
+                
+                if(isAudioExtract){
+                    const audioFmt=document.getElementById('audioFormatSelect-video').value;
+                    pT.textContent='Invio al server...';
+                    pB.style.width='10%';
+                    
+                    try {
+                        const formData = new FormData();
+                        formData.append('video', cur);
+                        formData.append('format', audioFmt);
+                        
+                        // Progresso upload
+                        const xhr = new XMLHttpRequest();
+                        xhr.upload.onprogress = e => {
+                            if (e.lengthComputable) {
+                                const pct = Math.round((e.loaded / e.total) * 50);
+                                pB.style.width = pct + '%';
+                                pT.textContent = `Upload: ${pct}%`;
+                            }
+                        };
+                        
+                        const response = await new Promise((resolve, reject) => {
+                            xhr.open('POST', '/.netlify/functions/extract-audio');
+                            xhr.responseType = 'blob';
+                            xhr.onload = () => xhr.status === 200 ? resolve(xhr.response) : reject(new Error('Server error: ' + xhr.status));
+                            xhr.onerror = () => reject(new Error('Errore rete'));
+                            xhr.send(formData);
+                        });
+                        
+                        pB.style.width = '100%';
+                        pT.textContent = 'Download...';
+                        downloadBlob(response, 'extracted.' + audioFmt);
+                        
+                        btn.disabled = false; btn.textContent = 'CONVERTI';
+                        return;
+                    } catch(e) {
+                        console.error('Errore estrazione audio:', e);
+                        throw new Error('Estrazione audio fallita: ' + (e.message || e.toString()));
+                    }
+                }
+                
+                if(fmt==='gif') { pT.textContent='GIF non supportata nativamente, uso WEBM...'; fmt = 'webm'; }
+                const stream=vid.captureStream();
+                let mime='video/webm; codecs=vp9', realFmt='webm';
+                if(fmt==='mp4'||fmt==='avi'||fmt==='mkv'||fmt==='3gp') { if(MediaRecorder.isTypeSupported('video/mp4; codecs=avc1.42E01E')) { mime='video/mp4; codecs=avc1.42E01E'; realFmt='mp4'; } else if(MediaRecorder.isTypeSupported('video/mp4')) { mime='video/mp4'; realFmt='mp4'; } else { pT.textContent=fmt.toUpperCase()+' non supportato, fallback WEBM...'; fmt='webm'; } }
+                if(fmt==='mov') { if(MediaRecorder.isTypeSupported('video/mp4')) { mime='video/mp4'; realFmt='mov'; } else { pT.textContent='MOV non supportato, fallback WEBM...'; fmt='webm'; } }
+                if(fmt==='webm') { mime='video/webm; codecs=vp9'; realFmt='webm'; }
+                const rec=new MediaRecorder(stream,{mimeType:mime}); const chunks=[];
+                rec.ondataavailable=e=>chunks.push(e.data);
+                rec.onstop=()=>{ downloadBlob(new Blob(chunks,{type:mime}), 'converted.'+realFmt); pB.style.width='100%'; pT.textContent='Fatto!'; btn.disabled=false; btn.textContent='CONVERTI'; };
+                rec.start(); vid.play();
+                vid.ontimeupdate=()=>{pB.style.width=Math.min((vid.currentTime/vid.duration)*100,99)+'%'; pT.textContent=Math.round((vid.currentTime/vid.duration)*100)+'%'};
+                vid.onended=()=>setTimeout(()=>rec.stop(),500);
+            }catch(e){alert('Errore: '+e.message); pC.style.display='none'; btn.disabled=false; btn.textContent='CONVERTI'}
+        };
+    }
+    setupAudio(); setupVideo();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + CURRENT_VERSION);
+</script>
+</body>
+</html>
