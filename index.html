@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Studio Converter Pro Suite v5.1.0</title>
+    <title>Studio Converter Pro Suite v5.2.0</title>
     
     <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -18,6 +18,9 @@
 
     <script>
         if (window.innerWidth <= 768) document.documentElement.className += ' mobile-app';
+        const style = document.createElement('style');
+        style.textContent = '@keyframes slideIn { from { opacity:0; transform:translateX(100px); } to { opacity:1; transform:translateX(0); } }';
+        document.head.appendChild(style);
     </script>
 </head>
 <body>
@@ -230,10 +233,18 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.1.0";
+    const CURRENT_VERSION = "5.2.0";
     const VERSION_URL = "version.json";
 
     const NEWS = [
+        { version: "5.2.0", date: "2026-09-20", items: [
+            "✅ Nuovo: Estrazione audio da video lato server (Netlify Function + ffmpeg)",
+            "✅ Nuovo: Supporto formati MP3, WAV, FLAC, OGG, AAC, M4A, OPUS",
+            "✅ Nuovo: Notifiche aggiornamenti solo nel sito (modal + toast, niente browser)",
+            "✅ Fix: Estrazione audio affidabile senza MediaRecorder (tempo reale)",
+            "✅ Fix: Service worker cache aggiornato a v5.2.0",
+            "✅ Fix: Netlify Function deploy automatico su push"
+        ]},
         { version: "5.1.0", date: "2026-09-19", items: [
             "✅ Nuovo: Estrazione audio da video (MP3, WAV, FLAC, OGG, AAC, M4A, WEBM)",
             "✅ Nuovo: App desktop scaricabile (.exe via MediaFire)",
@@ -353,12 +364,17 @@
             if (data.version !== CURRENT_VERSION) {
                 document.getElementById('new-version-num').textContent = data.version;
                 document.getElementById('update-popup').style.display = 'flex';
-                if (Notification.permission === "granted") {
-                    const notif = new Notification("🔄 Aggiornamento Disponibile!", { body: `Versione ${data.version} pronta.`, icon: "favicon.svg", tag: "update-notification", requireInteraction: true });
-                    notif.onclick = function() { window.focus(); downloadUpdate(); notif.close(); };
-                }
-            } else { if (manual) alert("Sei già all'ultima versione!"); }
-        } catch (e) { if (manual) alert("Errore controllo aggiornamenti."); }
+            } else { 
+                if (manual) showToast('✅ Sei già all\'ultima versione (' + CURRENT_VERSION + ')'); 
+            }
+        } catch (e) { if (manual) showToast('❌ Errore controllo aggiornamenti'); }
+    }
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#6366f1;color:white;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;animation:slideIn 0.3s';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(100px)'; setTimeout(()=>t.remove(),300); }, 4000);
     }
     function downloadUpdate() {
         if (!latestVersionData || !latestVersionData.download_url) return;
