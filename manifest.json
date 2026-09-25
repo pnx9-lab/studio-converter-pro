@@ -1,7 +1,7 @@
 {
   "name": "Studio Converter Pro Suite",
   "short_name": "Studio Pro",
-  "description": "Suite professionale per conversione Immagini, Video e Audio.",
+  "description": "Professional suite for converting images, video and audio. Free, fast, works in your browser.",
   "start_url": "index.html",
   "scope": "index.html",
   "display": "standalone",
