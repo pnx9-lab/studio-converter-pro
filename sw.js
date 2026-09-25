@@ -2,6 +2,7 @@ const CACHE_NAME = 'converter-pro-cache-v5.2.2';
 const ASSETS = [
   '/',
   '/index.html',
+  '/privacy.html',
   '/style.css',
   '/manifest.json',
   '/favicon.svg',
