@@ -1,0 +1,32 @@
+{
+  "packageId": "com.studioconverter.pro",
+  "host": "studioconverterpro.netlify.app",
+  "name": "Studio Converter Pro",
+  "launcherName": "Studio Pro",
+  "display": "standalone",
+  "themeColor": "#6366f1",
+  "navigationColor": "#6366f1",
+  "navigationDividerColor": "#050b14",
+  "backgroundColor": "#050b14",
+  "enableNotifications": false,
+  "startUrl": "/index.html",
+  "iconUrl": "https://studioconverterpro.netlify.app/icon-512.png",
+  "maskableIconUrl": "https://studioconverterpro.netlify.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "5.2.2",
+  "appVersionCode": 522,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://studioconverterpro.netlify.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "minSdkVersion": 21
+}

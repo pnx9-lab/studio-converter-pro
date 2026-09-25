@@ -1,0 +1,20 @@
+# Dipendenze
+node_modules/
+
+# Keystore di firma Android (MAI committare!)
+android.keystore
+*.jks
+*.p12
+keystore-base64.txt
+
+# Output build
+dist/
+app/
+release/
+
+# File temporanei screenshot
+_shot_*.html
+
+# OS / editor
+Thumbs.db
+.DS_Store
