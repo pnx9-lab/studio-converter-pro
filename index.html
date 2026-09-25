@@ -2,26 +2,24 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Studio Converter Pro Suite v5.2.0</title>
     
     <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Studio Pro">
+    <meta name="format-detection" content="telephone=no">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
-
-    <script>
-        if (window.innerWidth <= 768) document.documentElement.className += ' mobile-app';
-        const style = document.createElement('style');
-        style.textContent = '@keyframes slideIn { from { opacity:0; transform:translateX(100px); } to { opacity:1; transform:translateX(0); } }';
-        document.head.appendChild(style);
-    </script>
 </head>
 <body>
 
@@ -39,7 +37,7 @@
     <!-- HOME -->
     <section id="tab-home" class="tab-content active">
         <div class="hero-section">
-            <h1 style="font-size: 32px; margin-bottom: 10px;">Studio Converter Suite</h1>
+            <h1 class="hero-title">Studio Converter Suite</h1>
             <p class="subtitle">Tutti i formati. Immagini, Video, Audio. Zero limiti.</p>
             <div class="features-grid">
                 <div class="feature-card" onclick="switchTab('img')"><div class="f-icon">🖼️</div><h3>Immagini</h3><p>JPG, PNG, WEBP, AVIF, ICO, PDF.</p></div>
@@ -339,10 +337,10 @@
     }
     function showToast(msg) {
         const t = document.createElement('div');
+        t.className = 'toast';
         t.textContent = msg;
-        t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#6366f1;color:white;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;animation:slideIn 0.3s';
         document.body.appendChild(t);
-        setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(100px)'; setTimeout(()=>t.remove(),300); }, 4000);
+        setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 4000);
     }
     function downloadUpdate() {
         if (!latestVersionData || !latestVersionData.download_url) return;
