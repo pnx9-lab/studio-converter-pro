@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.0</title>
+    <title>Studio Converter Pro Suite v5.2.2</title>
     
     <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -218,10 +218,19 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.2.0";
+    const CURRENT_VERSION = "5.2.2";
     const VERSION_URL = "version.json";
 
     const NEWS = [
+        { version: "5.2.2", date: "2026-09-25", items: [
+            "📱 Nuovo: App mobile - barra di navigazione in basso con icone (stile app)",
+            "📱 Nuovo: Layout responsive totale con media query (funziona anche ruotando lo schermo)",
+            "📱 Nuovo: Modal a foglio bottom e toast centrato su smartphone",
+            "📱 Nuovo: Meta PWA per iOS/Android (apple-touch-icon PNG, standalone, status bar, safe-area)",
+            "📱 Nuovo: Icone manifest maskable per l'installazione su schermata Home",
+            "✅ Fix: stile mobile non si applicava (classe su <html> invece che su <body>)",
+            "✅ Fix: download aggiornamenti non più un link 404"
+        ]},
         { version: "5.2.0", date: "2026-09-20", items: [
             "✅ Nuovo: Estrazione audio da video lato server (Netlify Function + ffmpeg)",
             "✅ Nuovo: Supporto formati MP3, WAV, FLAC, OGG, AAC, M4A, OPUS",
