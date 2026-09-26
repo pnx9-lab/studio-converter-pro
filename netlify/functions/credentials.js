@@ -33,7 +33,7 @@ async function openStore() {
   try {
     mod = await import('@netlify/blobs');
   } catch (e) {
-    if (isNetlify()) throw e;
+    if (isNetlify()) throw new Error('blobs import: ' + String((e && e.message) || e));
     return null;
   }
   const getStore = mod.getStore || (mod.default && mod.default.getStore);
@@ -41,14 +41,22 @@ async function openStore() {
     if (isNetlify()) throw new Error('@netlify/blobs: getStore non disponibile');
     return null;
   }
-  return getStore(STORE_NAME);
+  try {
+    return getStore(STORE_NAME);
+  } catch (e) {
+    throw new Error('blobs getStore: ' + String((e && e.message) || e));
+  }
 }
 
 async function getUsers() {
   const store = await openStore();
   if (store) {
-    const data = await store.get(USERS_KEY, { type: 'json' });
-    return (data && typeof data === 'object') ? data : {};
+    try {
+      const data = await store.get(USERS_KEY, { type: 'json' });
+      return (data && typeof data === 'object') ? data : {};
+    } catch (e) {
+      throw new Error('blobs get: ' + String((e && e.message) || e));
+    }
   }
   try {
     return JSON.parse(fs.readFileSync(LOCAL_FILE, 'utf8'));
@@ -60,7 +68,11 @@ async function getUsers() {
 async function setUsers(users) {
   const store = await openStore();
   if (store) {
-    await store.set(USERS_KEY, JSON.stringify(users));
+    try {
+      await store.set(USERS_KEY, JSON.stringify(users));
+    } catch (e) {
+      throw new Error('blobs set: ' + String((e && e.message) || e));
+    }
     return;
   }
   fs.writeFileSync(LOCAL_FILE, JSON.stringify(users, null, 2));
@@ -127,7 +139,8 @@ exports.handler = async (event) => {
 
     return json(400, { ok: false, error: 'action' });
   } catch (e) {
-    console.error('credentials error:', e && e.message ? e.message : e);
-    return json(500, { ok: false, error: 'server' });
+    const detail = String((e && (e.message || e)) || 'unknown').slice(0, 400);
+    console.error('credentials error:', detail);
+    return json(500, { ok: false, error: 'server', detail: detail });
   }
 };
