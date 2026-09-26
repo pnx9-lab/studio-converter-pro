@@ -43,6 +43,7 @@
             <div class="nav-item" onclick="switchTab('video')" id="nav-video"><span class="nav-icon">🎬</span><span class="nav-text" data-i18n="nav.video">Video</span></div>
             <div class="nav-item" onclick="switchTab('audio')" id="nav-audio"><span class="nav-icon">🎵</span><span class="nav-text" data-i18n="nav.audio">Audio</span></div>
             <div class="nav-item" onclick="switchTab('auth')" id="nav-auth"><span class="nav-icon">👤</span><span class="nav-text" id="authLabel">Login</span></div>
+            <div class="nav-item" onclick="switchTab('settings')" id="nav-settings"><span class="nav-icon">⚙️</span><span class="nav-text" data-i18n="nav.settings">Impostazioni</span></div>
         </div>
     </nav>
 
@@ -199,14 +200,22 @@
             </div>
             <form id="formLogin" class="auth-form">
                 <h2 data-i18n="auth.welcome">Bentornato! 👋</h2>
-                <label data-i18n="auth.username">Username</label><input type="text" id="loginUser" required>
-                <label data-i18n="auth.password">Password</label><input type="password" id="loginPass" required>
+                <label data-i18n="auth.username">Username</label><input type="text" id="loginUser" required autocomplete="username">
+                <label data-i18n="auth.password">Password</label>
+                <div class="pw-wrap">
+                    <input type="password" id="loginPass" required autocomplete="current-password">
+                    <button type="button" class="pw-eye" onclick="togglePw('loginPass', this)" title="Mostra/Nascondi password" aria-label="Mostra password">👁️</button>
+                </div>
                 <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="auth.loginBtn">ACCEDI</button>
             </form>
             <form id="formSignup" class="auth-form" style="display:none;">
                 <h2 data-i18n="auth.signupTitle">Crea Account ✨</h2>
-                <label data-i18n="auth.username">Username</label><input type="text" id="signupUser" required>
-                <label data-i18n="auth.password">Password</label><input type="password" id="signupPass" required>
+                <label data-i18n="auth.username">Username</label><input type="text" id="signupUser" required autocomplete="username">
+                <label data-i18n="auth.password">Password</label>
+                <div class="pw-wrap">
+                    <input type="password" id="signupPass" required autocomplete="new-password">
+                    <button type="button" class="pw-eye" onclick="togglePw('signupPass', this)" title="Mostra/Nascondi password" aria-label="Mostra password">👁️</button>
+                </div>
                 <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="auth.signupBtn">REGISTRATI</button>
             </form>
             <div id="authMessage" style="margin-top:15px; text-align:center; font-size:14px;"></div>
@@ -217,8 +226,11 @@
             <p style="color:var(--text-muted); margin-bottom:20px;" data-i18n="auth.account">Account Pro Suite</p>
             <button class="btn-logout" onclick="logout()" data-i18n="auth.logout">ESCI</button>
         </div>
+    </section>
 
-        <!-- IMPOSTAZIONI: lingua, cartella di salvataggio, download (PC) -->
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab-content">
+        <!-- IMPOSTAZIONI: lingua, cartella di salvataggio, download -->
         <div class="auth-card settings-card" id="settingsContainer">
             <h2 class="settings-title" data-i18n="set.title">⚙️ Impostazioni</h2>
 
@@ -292,6 +304,9 @@
             "upd.textPre": "È uscita la versione ", "upd.textPost": ".",
             "upd.now": "AGGIORNA ORA", "upd.later": "Più tardi",
             "toast.created": "✅ Account creato! Ora fai login.",
+            "toast.createdDb": "✅ Account creato e salvato nel database!",
+            "toast.createdLocal": "✅ Account creato su questo dispositivo (database non raggiungibile)",
+            "toast.exists": "⚠️ Username già presente nel database",
             "toast.welcome": "✅ Bentornato, ",
             "toast.badLogin": "❌ Utente o password errati",
             "toast.upToDate": "✅ Sei già all'ultima versione (",
@@ -306,6 +321,7 @@
             "prog.fallbackWebm": "non supportato, fallback WEBM...",
             "err.extract": "Estrazione audio fallita: ", "err.network": "Errore rete",
             "nav.folder": "Cartella",
+            "nav.settings": "Impostazioni",
             "set.title": "⚙️ Impostazioni",
             "set.lang": "Lingua",
             "set.folder": "Cartella di salvataggio",
@@ -349,6 +365,9 @@
             "upd.textPre": "Version ", "upd.textPost": " is out.",
             "upd.now": "UPDATE NOW", "upd.later": "Later",
             "toast.created": "✅ Account created! Now log in.",
+            "toast.createdDb": "✅ Account created and saved to the database!",
+            "toast.createdLocal": "✅ Account created on this device (database unreachable)",
+            "toast.exists": "⚠️ Username already exists in the database",
             "toast.welcome": "✅ Welcome back, ",
             "toast.badLogin": "❌ Wrong username or password",
             "toast.upToDate": "✅ You already have the latest version (",
@@ -363,6 +382,7 @@
             "prog.fallbackWebm": "not supported, falling back to WEBM...",
             "err.extract": "Audio extraction failed: ", "err.network": "Network error",
             "nav.folder": "Folder",
+            "nav.settings": "Settings",
             "set.title": "⚙️ Settings",
             "set.lang": "Language",
             "set.folder": "Save folder",
@@ -556,24 +576,83 @@
         }
         return text;
     }
+    // --- DATABASE CREDENZIALI CONDIVISO (Netlify Function + Netlify Blobs) ---
+    // Ogni nuova registrazione viene salvata nel database: lo stesso account
+    // funziona su PC, telefono e app. Se il database non risponde si resta su locale.
+    const CRED_FN = '/.netlify/functions/credentials';
+    async function remoteCreds(action, u, p) {
+        try {
+            const r = await fetch(CRED_FN, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, u: u, p: p })
+            });
+            if (!r.ok) return null;
+            return await r.json();
+        } catch (e) { return null; }
+    }
+    function localUserKey(u) {
+        if (localStorage.getItem('user_' + u) !== null) return u;
+        const lu = String(u).toLowerCase();
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.indexOf('user_') === 0 && k.slice(5).toLowerCase() === lu) return k.slice(5);
+        }
+        return null;
+    }
+    // Restituisce l'username canonico se le credenziali sono valide, altrimenti null
+    async function checkPassword(u, p) {
+        const h = await hashText(p);
+        const remote = await remoteCreds('login', u, p);
+        if (remote && remote.ok) {
+            try { localStorage.setItem('user_' + remote.user, h); } catch (e) { }
+            return remote.user || u;
+        }
+        const lk = localUserKey(u);
+        if (lk) {
+            const v = localStorage.getItem('user_' + lk);
+            if (v && (v === h || v === p)) return lk;
+        }
+        return null;
+    }
+    function togglePw(id, btn) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const show = el.type === 'password';
+        el.type = show ? 'text' : 'password';
+        btn.textContent = show ? '🙈' : '👁️';
+        btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+    }
+
     document.getElementById('formSignup').onsubmit = async e => {
         e.preventDefault();
-        const u = document.getElementById('signupUser').value;
+        const u = document.getElementById('signupUser').value.trim();
         const p = document.getElementById('signupPass').value;
-        localStorage.setItem('user_' + u, await hashText(p));
-        showToast(t('toast.created'));
+        const h = await hashText(p);
+        const r = await remoteCreds('signup', u, p);
+        if (r && r.ok === false && r.error === 'exists') {
+            showToast(t('toast.exists'));
+            return;
+        }
+        if (r && r.ok) {
+            try { localStorage.setItem('user_' + (r.user || u), h); } catch (e) { }
+            showToast(t('toast.createdDb'));
+        } else {
+            localStorage.setItem('user_' + u, h);
+            showToast(t('toast.createdLocal'));
+        }
         toggleAuth('login');
     };
     document.getElementById('formLogin').onsubmit = async e => {
         e.preventDefault();
-        const u = document.getElementById('loginUser').value;
+        const u = document.getElementById('loginUser').value.trim();
         const p = document.getElementById('loginPass').value;
-        const stored = localStorage.getItem('user_' + u);
-        if (stored && (stored === await hashText(p) || stored === p)) {
-            localStorage.setItem('loggedInUser', u);
+        const user = await checkPassword(u, p);
+        if (user) {
+            localStorage.setItem('loggedInUser', user);
             await applyProfile();
             updateAuthUI();
-            showToast(t('toast.welcome') + u + '!');
+            showToast(t('toast.welcome') + user + '!');
         } else {
             showToast(t('toast.badLogin'));
         }
@@ -659,7 +738,7 @@
         if (!p) { refreshFolderUI(); initDownloads(); return; }
         if (p.lang && p.lang !== LANG) { LANG = p.lang; applyLang(); }
         if (inApp()) {
-            if (p.folder) { saveFolderUri = p.folder; try { localStorage.setItem('saveFolderUri', p.folder); } catch (e) { } }
+            if (p.folder) { saveFolderUri = p.folder; try { localStorage.setItem('saveFolderUri', p.folder); } catch (e) { } rememberAppFolder(p.folder); }
         }
         if (Array.isArray(p.downloads)) { try { localStorage.setItem('dlHistory', JSON.stringify(p.downloads.slice(0, 15))); } catch (e) { } }
         if (inApp() && saveFolderUri) verifyAppFolder();
@@ -683,17 +762,31 @@
             })();
         }
     }
-    // App Android: la cartella va verificata (permesso SAF persistente)
+    // App Android: la cartella va verificata (permesso SAF persistente).
+    // Se il permesso è andato perso non cancelliamo il percorso: resta memorizzato
+    // e l'utente basta che riapra la scelta (il picker parte da lì).
     function verifyAppFolder() {
         if (!saveFolderUri) return;
         if (!window.AppDownloads || typeof AppDownloads.check !== 'function') return;
         AppDownloads.check({ folder: saveFolderUri }, function () { }, function () {
-            saveFolderUri = null;
-            try { localStorage.removeItem('saveFolderUri'); } catch (e) { }
-            saveProfile();
-            refreshFolderUI();
             showToast(t('set.folderLost'));
         });
+    }
+    // Se il WebView ha perso il localStorage, il percorso resta nella memoria nativa dell'app
+    function restoreAppFolder() {
+        if (!window.AppDownloads || typeof AppDownloads.recall !== 'function') return;
+        AppDownloads.recall({ key: 'saveFolderUri' }, function (v) {
+            if (!v || saveFolderUri) return;
+            saveFolderUri = v;
+            try { localStorage.setItem('saveFolderUri', v); } catch (e) { }
+            refreshFolderUI();
+            saveProfile();
+            verifyAppFolder();
+        }, function () { });
+    }
+    function rememberAppFolder(v) {
+        if (!window.AppDownloads || typeof AppDownloads.remember !== 'function') return;
+        AppDownloads.remember({ key: 'saveFolderUri', value: v || '' }, function () { }, function () { });
     }
 
     async function initSaveFolder() {
@@ -702,7 +795,8 @@
         if (inApp()) {
             saveFolderUri = localStorage.getItem('saveFolderUri') || null;
             row.style.display = '';
-            verifyAppFolder();
+            if (saveFolderUri) verifyAppFolder();
+            else restoreAppFolder();
         } else if (hasDirPicker()) {
             try {
                 saveDirHandle = await idbGet(dirKey(currentUser()));
@@ -734,6 +828,7 @@
         if (inApp()) {
             saveFolderUri = null;
             try { localStorage.removeItem('saveFolderUri'); } catch (e) { }
+            rememberAppFolder('');
         } else {
             saveDirHandle = null;
             idbDel(dirKey(currentUser())).catch(() => { });
@@ -787,7 +882,7 @@
         if (inApp()) {
             try {
                 const uri = await cordova.plugins.safMediastore.selectFolder(saveFolderUri || null);
-                if (uri) { saveFolderUri = uri; localStorage.setItem('saveFolderUri', uri); refreshFolderUI(); saveProfile(); showToast(t('folder.picked') + folderNameFromUri(uri)); }
+                if (uri) { saveFolderUri = uri; localStorage.setItem('saveFolderUri', uri); rememberAppFolder(uri); refreshFolderUI(); saveProfile(); showToast(t('folder.picked') + folderNameFromUri(uri)); }
             } catch (e) { showToast(t('folder.cancel')); }
             return;
         }

@@ -283,6 +283,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     border-radius: 20px;
     border: 1px solid var(--glass-border);
     max-width: 350px;
+    width: 100%;
+    box-sizing: border-box;
     margin: 20px auto;
     box-shadow: 0 20px 50px var(--glass-shadow);
     text-align: center;
@@ -327,6 +329,37 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     text-align: left;
 }
 
+/* Password con occhiolino 👁️ */
+.pw-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.auth-form .pw-wrap input {
+    margin: 0;
+    padding-right: 42px;
+}
+
+.pw-eye {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    padding: 8px;
+    min-height: auto;
+}
+
+.pw-eye:hover { color: #fff; }
+
 .profile-avatar {
     width: 70px;
     height: 70px;
@@ -354,7 +387,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     font-weight: bold;
 }
 
-/* --- IMPOSTAZIONI (pagina account) --- */
+/* --- IMPOSTAZIONI (sezione a parte) --- */
 .settings-card {
     max-width: 480px;
     text-align: left;

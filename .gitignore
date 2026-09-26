@@ -18,3 +18,6 @@ _shot_*.html
 # OS / editor
 Thumbs.db
 .DS_Store
+
+# Database locale di sviluppo (Netlify Function)
+netlify/functions/.data-users.json
