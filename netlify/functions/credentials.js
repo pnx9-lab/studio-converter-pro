@@ -28,18 +28,24 @@ function findKey(users, u) {
 }
 
 // Ritorna lo store Blobs, oppure null in locale (sviluppo/test senza Netlify)
-async function openStore() {
+async function openStore(event) {
+  if (!isNetlify()) return null; // sviluppo locale: database su file
   let mod = null;
   try {
     mod = await import('@netlify/blobs');
   } catch (e) {
-    if (isNetlify()) throw new Error('blobs import: ' + String((e && e.message) || e));
-    return null;
+    throw new Error('blobs import: ' + String((e && e.message) || e));
   }
   const getStore = mod.getStore || (mod.default && mod.default.getStore);
-  if (typeof getStore !== 'function') {
-    if (isNetlify()) throw new Error('@netlify/blobs: getStore non disponibile');
-    return null;
+  const connectLambda = mod.connectLambda || (mod.default && mod.default.connectLambda);
+  if (typeof getStore !== 'function') throw new Error('@netlify/blobs: getStore non disponibile');
+  // Modalità Lambda compatibility (handler V1): l'ambiente Blobs va inizializzato a mano
+  if (event && typeof event.blobs === 'string' && typeof connectLambda === 'function') {
+    try {
+      connectLambda(event);
+    } catch (e) {
+      throw new Error('blobs connectLambda: ' + String((e && e.message) || e));
+    }
   }
   try {
     return getStore(STORE_NAME);
@@ -48,8 +54,8 @@ async function openStore() {
   }
 }
 
-async function getUsers() {
-  const store = await openStore();
+async function getUsers(event) {
+  const store = await openStore(event);
   if (store) {
     try {
       const data = await store.get(USERS_KEY, { type: 'json' });
@@ -65,8 +71,8 @@ async function getUsers() {
   }
 }
 
-async function setUsers(users) {
-  const store = await openStore();
+async function setUsers(users, event) {
+  const store = await openStore(event);
   if (store) {
     try {
       await store.set(USERS_KEY, JSON.stringify(users));
@@ -107,7 +113,7 @@ exports.handler = async (event) => {
   if (p.length < 4 || p.length > 128) return json(400, { ok: false, error: 'pass' });
 
   try {
-    const users = await getUsers();
+    const users = await getUsers(event);
 
     if (action === 'signup') {
       const k = findKey(users, u);
@@ -119,7 +125,7 @@ exports.handler = async (event) => {
         return json(200, { ok: false, error: 'exists' });
       }
       users[u] = sha256(p);
-      await setUsers(users);
+      await setUsers(users, event);
       return json(200, { ok: true, user: u });
     }
 
@@ -130,7 +136,7 @@ exports.handler = async (event) => {
       if (users[k] === h || users[k] === p) {
         if (users[k] !== h) {
           users[k] = h;
-          try { await setUsers(users); } catch (e) { }
+          try { await setUsers(users, event); } catch (e) { }
         }
         return json(200, { ok: true, user: k });
       }
