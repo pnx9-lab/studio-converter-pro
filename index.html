@@ -43,8 +43,6 @@
             <div class="nav-item" onclick="switchTab('video')" id="nav-video"><span class="nav-icon">🎬</span><span class="nav-text" data-i18n="nav.video">Video</span></div>
             <div class="nav-item" onclick="switchTab('audio')" id="nav-audio"><span class="nav-icon">🎵</span><span class="nav-text" data-i18n="nav.audio">Audio</span></div>
             <div class="nav-item" onclick="switchTab('auth')" id="nav-auth"><span class="nav-icon">👤</span><span class="nav-text" id="authLabel">Login</span></div>
-            <div class="nav-item" onclick="chooseSaveFolder()" id="nav-folder" style="display:none" title="Cartella di salvataggio / Save folder"><span class="nav-icon">📁</span><span class="nav-text" id="folderLabel" data-i18n="nav.folder">Cartella</span></div>
-            <div class="nav-item" onclick="toggleLang()" id="nav-lang" title="Language / Lingua"><span class="nav-icon">🌐</span><span class="nav-text" id="langLabel">IT</span></div>
         </div>
     </nav>
 
@@ -219,6 +217,34 @@
             <p style="color:var(--text-muted); margin-bottom:20px;" data-i18n="auth.account">Account Pro Suite</p>
             <button class="btn-logout" onclick="logout()" data-i18n="auth.logout">ESCI</button>
         </div>
+
+        <!-- IMPOSTAZIONI: lingua, cartella di salvataggio, download (PC) -->
+        <div class="auth-card settings-card" id="settingsContainer">
+            <h2 class="settings-title" data-i18n="set.title">⚙️ Impostazioni</h2>
+
+            <div class="setting-row">
+                <span class="setting-label" data-i18n="set.lang">Lingua</span>
+                <div class="lang-switch">
+                    <button type="button" id="setLangIt" onclick="setLang('it')">IT</button>
+                    <button type="button" id="setLangEn" onclick="setLang('en')">EN</button>
+                </div>
+            </div>
+
+            <div class="setting-row" id="folderRow" style="display:none;">
+                <span class="setting-label" data-i18n="set.folder">Cartella di salvataggio</span>
+                <div class="setting-actions">
+                    <span class="setting-value" id="folderValue" data-i18n="set.folderNone">Download (default)</span>
+                    <button type="button" class="setting-btn" onclick="chooseSaveFolder()" data-i18n="set.choose">📁 Scegli</button>
+                    <button type="button" class="setting-btn ghost" id="folderResetBtn" onclick="resetSaveFolder()" style="display:none;" title="Rimuovi cartella">↺</button>
+                </div>
+            </div>
+
+            <div class="setting-row" id="downloadsRow" style="display:none;">
+                <span class="setting-label" data-i18n="set.downloads">📥 Download</span>
+                <button type="button" class="setting-btn ghost" onclick="clearDownloads()" data-i18n="set.dlClear">Svuota</button>
+            </div>
+            <div id="downloadsList" class="dl-list" style="display:none;"></div>
+        </div>
     </section>
 
     <!-- UPDATE POPUP -->
@@ -280,6 +306,15 @@
             "prog.fallbackWebm": "non supportato, fallback WEBM...",
             "err.extract": "Estrazione audio fallita: ", "err.network": "Errore rete",
             "nav.folder": "Cartella",
+            "set.title": "⚙️ Impostazioni",
+            "set.lang": "Lingua",
+            "set.folder": "Cartella di salvataggio",
+            "set.folderNone": "Download (default)",
+            "set.folderLost": "⚠️ Cartella non valida più, scegli di nuovo",
+            "set.choose": "📁 Scegli",
+            "set.downloads": "📥 Download",
+            "set.dlClear": "Svuota",
+            "set.dlEmpty": "Nessun file salvato ancora",
             "folder.picked": "✅ Cartella di salvataggio: ",
             "folder.cancel": "❌ Selezione annullata",
             "folder.permDenied": "❌ Permesso di scrittura negato",
@@ -328,6 +363,15 @@
             "prog.fallbackWebm": "not supported, falling back to WEBM...",
             "err.extract": "Audio extraction failed: ", "err.network": "Network error",
             "nav.folder": "Folder",
+            "set.title": "⚙️ Settings",
+            "set.lang": "Language",
+            "set.folder": "Save folder",
+            "set.folderNone": "Downloads (default)",
+            "set.folderLost": "⚠️ Folder no longer valid, choose it again",
+            "set.choose": "📁 Choose",
+            "set.downloads": "📥 Downloads",
+            "set.dlClear": "Clear",
+            "set.dlEmpty": "No files saved yet",
             "folder.picked": "✅ Save folder: ",
             "folder.cancel": "❌ Selection cancelled",
             "folder.permDenied": "❌ Write permission denied",
@@ -346,8 +390,9 @@
 
     function applyLang() {
         document.documentElement.lang = LANG;
-        const lbl = document.getElementById('langLabel');
-        if (lbl) lbl.textContent = LANG.toUpperCase();
+        const bIt = document.getElementById('setLangIt');
+        const bEn = document.getElementById('setLangEn');
+        if (bIt && bEn) { bIt.classList.toggle('active', LANG === 'it'); bEn.classList.toggle('active', LANG === 'en'); }
         document.querySelectorAll('[data-i18n]').forEach(el => {
             if (el.hasAttribute('data-custom')) return;
             el.textContent = t(el.getAttribute('data-i18n'));
@@ -359,13 +404,15 @@
         if (pl) pl.setAttribute('href', LANG === 'en' ? 'privacy-en.html' : 'privacy.html');
         if (typeof renderNews === 'function') renderNews();
         if (typeof updateAuthUI === 'function') updateAuthUI();
-        if (typeof refreshFolderLabel === 'function') refreshFolderLabel();
+        if (typeof refreshFolderUI === 'function') refreshFolderUI();
         localStorage.setItem('lang', LANG);
     }
 
-    function toggleLang() {
-        LANG = (LANG === 'it') ? 'en' : 'it';
+    function setLang(l) {
+        if (!I18N[l] || l === LANG) return;
+        LANG = l;
         applyLang();
+        saveProfile();
     }
 
     const NEWS = [
@@ -500,7 +547,7 @@
             document.getElementById('authLabel').textContent=t('nav.login');
         }
     }
-    function logout() { localStorage.removeItem('loggedInUser'); updateAuthUI(); }
+    function logout() { saveProfile(); localStorage.removeItem('loggedInUser'); updateAuthUI(); }
     async function hashText(text) {
         if (window.crypto && crypto.subtle) {
             const buf = new TextEncoder().encode(text);
@@ -524,6 +571,7 @@
         const stored = localStorage.getItem('user_' + u);
         if (stored && (stored === await hashText(p) || stored === p)) {
             localStorage.setItem('loggedInUser', u);
+            await applyProfile();
             updateAuthUI();
             showToast(t('toast.welcome') + u + '!');
         } else {
@@ -587,34 +635,159 @@
     function folderNameFromUri(uri) { try { return decodeURIComponent(String(uri).split('/').pop() || '').replace(/^.*:/, '') || String(uri); } catch (e) { return String(uri); } }
     function blobToBase64(b) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.readAsDataURL(b); }); }
 
-    async function initSaveFolder() {
-        const btn = document.getElementById('nav-folder');
-        if (!btn) return;
+    // --- PROFILO UTENTE: lingua, cartella e download salvati sul profilo ---
+    function currentUser() { try { return localStorage.getItem('loggedInUser'); } catch (e) { return null; } }
+    function profileKey(u) { return 'prof_' + u; }
+    function dirKey(u) { return 'saveDirHandle' + (u ? '#' + u : ''); }
+    function getProfile(u) { try { return u ? JSON.parse(localStorage.getItem(profileKey(u)) || 'null') : null; } catch (e) { return null; } }
+    function saveProfile() {
+        const u = currentUser();
+        if (!u) return;
+        try {
+            localStorage.setItem(profileKey(u), JSON.stringify({
+                lang: LANG,
+                folder: inApp() ? (saveFolderUri || '') : '',
+                dir: (!inApp() && saveDirHandle) ? saveDirHandle.name : '',
+                downloads: getDownloads()
+            }));
+        } catch (e) { }
+    }
+    async function applyProfile() {
+        const u = currentUser();
+        if (!u) return;
+        const p = getProfile(u);
+        if (!p) { refreshFolderUI(); initDownloads(); return; }
+        if (p.lang && p.lang !== LANG) { LANG = p.lang; applyLang(); }
         if (inApp()) {
-            saveFolderUri = localStorage.getItem('saveFolderUri') || null;
-        } else if (hasDirPicker()) {
-            try {
-                saveDirHandle = await idbGet('saveDirHandle');
-                if (saveDirHandle && await saveDirHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') saveDirHandle = null;
-            } catch (e) { saveDirHandle = null; }
-        } else return;
-        btn.style.display = '';
-        refreshFolderLabel();
+            if (p.folder) { saveFolderUri = p.folder; try { localStorage.setItem('saveFolderUri', p.folder); } catch (e) { } }
+        }
+        if (Array.isArray(p.downloads)) { try { localStorage.setItem('dlHistory', JSON.stringify(p.downloads.slice(0, 15))); } catch (e) { } }
+        if (inApp() && saveFolderUri) verifyAppFolder();
+        refreshFolderUI();
+        initDownloads();
+        saveProfile();
+        if (!inApp()) {
+            // Cartella PC (IndexedDB): non deve bloccare il resto del profilo
+            (async () => {
+                let h = null;
+                try { h = await idbGet(dirKey(u)); } catch (e) { }
+                if (h && h.queryPermission) {
+                    try {
+                        if (await h.queryPermission({ mode: 'readwrite' }) === 'denied') { h = null; idbDel(dirKey(u)).catch(() => { }); }
+                    } catch (e) { }
+                }
+                if (currentUser() !== u) return;
+                saveDirHandle = h || null;
+                refreshFolderUI();
+                saveProfile();
+            })();
+        }
+    }
+    // App Android: la cartella va verificata (permesso SAF persistente)
+    function verifyAppFolder() {
+        if (!saveFolderUri) return;
+        if (!window.AppDownloads || typeof AppDownloads.check !== 'function') return;
+        AppDownloads.check({ folder: saveFolderUri }, function () { }, function () {
+            saveFolderUri = null;
+            try { localStorage.removeItem('saveFolderUri'); } catch (e) { }
+            saveProfile();
+            refreshFolderUI();
+            showToast(t('set.folderLost'));
+        });
     }
 
-    function refreshFolderLabel() {
-        const sp = document.getElementById('folderLabel');
-        if (!sp) return;
+    async function initSaveFolder() {
+        const row = document.getElementById('folderRow');
+        if (!row) return;
+        if (inApp()) {
+            saveFolderUri = localStorage.getItem('saveFolderUri') || null;
+            row.style.display = '';
+            verifyAppFolder();
+        } else if (hasDirPicker()) {
+            try {
+                saveDirHandle = await idbGet(dirKey(currentUser()));
+                if (saveDirHandle && await saveDirHandle.queryPermission({ mode: 'readwrite' }) === 'denied') { saveDirHandle = null; idbDel(dirKey(currentUser())).catch(() => { }); }
+            } catch (e) { saveDirHandle = null; }
+            row.style.display = '';
+        }
+        refreshFolderUI();
+        initDownloads();
+    }
+
+    function refreshFolderUI() {
+        const v = document.getElementById('folderValue');
+        if (!v) return;
+        const rb = document.getElementById('folderResetBtn');
         const name = inApp() ? (saveFolderUri ? folderNameFromUri(saveFolderUri) : '') : (saveDirHandle ? saveDirHandle.name : '');
-        if (name) { sp.setAttribute('data-custom', ''); sp.textContent = '📁 ' + name.slice(0, 12); }
-        else { sp.removeAttribute('data-custom'); sp.textContent = t('nav.folder'); }
+        if (name) {
+            v.classList.add('has-folder');
+            v.textContent = '📁 ' + name;
+            if (rb) rb.style.display = '';
+        } else {
+            v.classList.remove('has-folder');
+            v.textContent = t('set.folderNone');
+            if (rb) rb.style.display = 'none';
+        }
+    }
+
+    function resetSaveFolder() {
+        if (inApp()) {
+            saveFolderUri = null;
+            try { localStorage.removeItem('saveFolderUri'); } catch (e) { }
+        } else {
+            saveDirHandle = null;
+            idbDel(dirKey(currentUser())).catch(() => { });
+        }
+        refreshFolderUI();
+        saveProfile();
+        showToast(t('set.folderNone'));
+    }
+
+    // --- DOWNLOAD (storico) ---
+    function getDownloads() { try { return JSON.parse(localStorage.getItem('dlHistory') || '[]'); } catch (e) { return []; } }
+    function addDownload(name, size) {
+        const list = getDownloads();
+        list.unshift({ n: name, s: size, t: Date.now() });
+        try { localStorage.setItem('dlHistory', JSON.stringify(list.slice(0, 15))); } catch (e) { }
+        saveProfile();
+        renderDownloads();
+    }
+    function clearDownloads() {
+        try { localStorage.removeItem('dlHistory'); } catch (e) { }
+        saveProfile();
+        renderDownloads();
+    }
+    function initDownloads() {
+        const row = document.getElementById('downloadsRow');
+        if (!row) return;
+        row.style.display = (inApp() || window.innerWidth > 768) ? '' : 'none';
+        renderDownloads();
+    }
+    function fmtSize(b) {
+        if (!b && b !== 0) return '';
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(2) + ' GB';
+    }
+    function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function renderDownloads() {
+        const row = document.getElementById('downloadsRow');
+        const box = document.getElementById('downloadsList');
+        if (!row || !box) return;
+        if (row.style.display === 'none') { box.style.display = 'none'; return; }
+        const list = getDownloads();
+        box.style.display = '';
+        box.innerHTML = list.length
+            ? list.map(d => '<div class="dl-item"><span class="dl-name" title="' + escapeHtml(d.n) + '">' + escapeHtml(d.n) + '</span><span class="dl-meta">' + fmtSize(d.s) + ' · ' + new Date(d.t).toLocaleString() + '</span></div>').join('')
+            : '<div class="dl-empty">' + t('set.dlEmpty') + '</div>';
     }
 
     async function chooseSaveFolder() {
         if (inApp()) {
             try {
                 const uri = await cordova.plugins.safMediastore.selectFolder(saveFolderUri || null);
-                if (uri) { saveFolderUri = uri; localStorage.setItem('saveFolderUri', uri); refreshFolderLabel(); showToast(t('folder.picked') + folderNameFromUri(uri)); }
+                if (uri) { saveFolderUri = uri; localStorage.setItem('saveFolderUri', uri); refreshFolderUI(); saveProfile(); showToast(t('folder.picked') + folderNameFromUri(uri)); }
             } catch (e) { showToast(t('folder.cancel')); }
             return;
         }
@@ -625,8 +798,9 @@
                 if (p !== 'granted') p = await h.requestPermission({ mode: 'readwrite' });
                 if (p !== 'granted') { showToast(t('folder.permDenied')); return; }
                 saveDirHandle = h;
-                await idbSet('saveDirHandle', h);
-                refreshFolderLabel();
+                await idbSet(dirKey(currentUser()), h);
+                refreshFolderUI();
+                saveProfile();
                 showToast(t('folder.picked') + h.name);
             } catch (e) {
                 if (e && e.name === 'AbortError') showToast(t('folder.cancel'));
@@ -667,7 +841,7 @@
             try {
                 let p = await saveDirHandle.queryPermission({ mode: 'readwrite' });
                 if (p !== 'granted') p = await saveDirHandle.requestPermission({ mode: 'readwrite' });
-                if (p !== 'granted') { saveDirHandle = null; idbDel('saveDirHandle').catch(() => { }); refreshFolderLabel(); return false; }
+                if (p !== 'granted') { saveDirHandle = null; idbDel(dirKey(currentUser())).catch(() => { }); saveProfile(); refreshFolderUI(); return false; }
                 const fh = await uniqueFileHandle(saveDirHandle, name);
                 const w = await fh.createWritable();
                 await w.write(blob);
@@ -679,14 +853,15 @@
     }
 
     async function downloadBlob(b, n) {
-        if (window.api && window.api.saveFile) { const r = new FileReader(); r.onload = () => window.api.saveFile(r.result, n.split('.').pop().toLowerCase()); r.readAsArrayBuffer(b); return; }
-        if (await saveBlob(b, n)) return;
+        if (window.api && window.api.saveFile) { const r = new FileReader(); r.onload = () => window.api.saveFile(r.result, n.split('.').pop().toLowerCase()); r.readAsArrayBuffer(b); addDownload(n, b.size); return; }
+        if (await saveBlob(b, n)) { addDownload(n, b.size); return; }
         const u = URL.createObjectURL(b);
         const a = document.createElement('a');
         a.href = u;
         a.download = n;
         a.click();
         URL.revokeObjectURL(u);
+        addDownload(n, b.size);
     }
     function dataUrlToUint8Array(dataUrl) {
         const base64 = dataUrl.split(',')[1];
@@ -858,6 +1033,7 @@
     setupAudio(); setupVideo();
     applyLang();
     initSaveFolder();
+    window.addEventListener('resize', () => { clearTimeout(window.__dlRT); window.__dlRT = setTimeout(initDownloads, 250); });
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + CURRENT_VERSION);
 </script>
 </body>

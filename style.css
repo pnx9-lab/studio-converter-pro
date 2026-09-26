@@ -354,6 +354,123 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     font-weight: bold;
 }
 
+/* --- IMPOSTAZIONI (pagina account) --- */
+.settings-card {
+    max-width: 480px;
+    text-align: left;
+    padding: 22px;
+}
+
+.settings-title {
+    font-size: 18px;
+    margin: 0 0 14px;
+    text-align: center;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+}
+
+.setting-row:last-of-type { border-bottom: none; }
+
+.setting-label { font-size: 14px; font-weight: 700; }
+
+.setting-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.setting-value {
+    font-size: 12px;
+    color: var(--text-muted);
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.setting-value.has-folder { color: #86efac; }
+
+.setting-btn {
+    background: rgba(99, 102, 241, 0.25);
+    border: 1px solid rgba(99, 102, 241, 0.55);
+    color: #c7d2fe;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.setting-btn:hover { background: rgba(99, 102, 241, 0.4); }
+
+.setting-btn.ghost {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--glass-border);
+    color: var(--text-muted);
+}
+
+.lang-switch {
+    display: flex;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.lang-switch button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.lang-switch button.active { background: #6366f1; color: #fff; }
+
+.dl-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.dl-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.dl-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.dl-meta { color: var(--text-muted); font-size: 11px; white-space: nowrap; }
+
+.dl-empty {
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 12px;
+}
+
 /* --- MODALI --- */
 .modal-overlay {
     position: fixed;
