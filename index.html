@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.2</title>
+    <title>Studio Converter Pro Suite v5.2.3</title>
     
     <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -20,6 +20,18 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <!-- Cordova: dentro l'app Android viene caricato il bridge da https://localhost (in rete non viene richiesto) -->
+    <script>
+        if (new URLSearchParams(location.search).get('app') === 'cordova') {
+            (function () {
+                var s = document.createElement('script');
+                s.src = 'https://localhost/cordova.js';
+                s.onload = function () { document.documentElement.dataset.app = 'cordova'; };
+                s.onerror = function () { };
+                document.head.appendChild(s);
+            })();
+        }
+    </script>
 </head>
 <body>
 
@@ -31,6 +43,7 @@
             <div class="nav-item" onclick="switchTab('video')" id="nav-video"><span class="nav-icon">🎬</span><span class="nav-text" data-i18n="nav.video">Video</span></div>
             <div class="nav-item" onclick="switchTab('audio')" id="nav-audio"><span class="nav-icon">🎵</span><span class="nav-text" data-i18n="nav.audio">Audio</span></div>
             <div class="nav-item" onclick="switchTab('auth')" id="nav-auth"><span class="nav-icon">👤</span><span class="nav-text" id="authLabel">Login</span></div>
+            <div class="nav-item" onclick="chooseSaveFolder()" id="nav-folder" style="display:none" title="Cartella di salvataggio / Save folder"><span class="nav-icon">📁</span><span class="nav-text" id="folderLabel" data-i18n="nav.folder">Cartella</span></div>
             <div class="nav-item" onclick="toggleLang()" id="nav-lang" title="Language / Lingua"><span class="nav-icon">🌐</span><span class="nav-text" id="langLabel">IT</span></div>
         </div>
     </nav>
@@ -220,7 +233,7 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.2.2";
+    const CURRENT_VERSION = "5.2.3";
     const VERSION_URL = "version.json";
 
     // --- I18N (Italiano / English) ---
@@ -265,7 +278,13 @@
             "prog.sendServer": "Invio al server...", "prog.download": "Download...",
             "prog.gifFallback": "GIF non supportata nativamente, uso WEBM...",
             "prog.fallbackWebm": "non supportato, fallback WEBM...",
-            "err.extract": "Estrazione audio fallita: ", "err.network": "Errore rete"
+            "err.extract": "Estrazione audio fallita: ", "err.network": "Errore rete",
+            "nav.folder": "Cartella",
+            "folder.picked": "✅ Cartella di salvataggio: ",
+            "folder.cancel": "❌ Selezione annullata",
+            "folder.permDenied": "❌ Permesso di scrittura negato",
+            "folder.notSupported": "❌ Cartella non supportata su questo dispositivo",
+            "folder.saveError": "❌ Impossibile salvare nella cartella, salvo in Download"
         },
         en: {
             "nav.home": "Home", "nav.img": "Images", "nav.video": "Video", "nav.audio": "Audio", "nav.login": "Login",
@@ -307,7 +326,13 @@
             "prog.sendServer": "Sending to server...", "prog.download": "Download...",
             "prog.gifFallback": "GIF not supported natively, using WEBM...",
             "prog.fallbackWebm": "not supported, falling back to WEBM...",
-            "err.extract": "Audio extraction failed: ", "err.network": "Network error"
+            "err.extract": "Audio extraction failed: ", "err.network": "Network error",
+            "nav.folder": "Folder",
+            "folder.picked": "✅ Save folder: ",
+            "folder.cancel": "❌ Selection cancelled",
+            "folder.permDenied": "❌ Write permission denied",
+            "folder.notSupported": "❌ Folder picking not supported on this device",
+            "folder.saveError": "❌ Can't save to that folder, saving to Downloads"
         }
     };
 
@@ -334,6 +359,7 @@
         if (pl) pl.setAttribute('href', LANG === 'en' ? 'privacy-en.html' : 'privacy.html');
         if (typeof renderNews === 'function') renderNews();
         if (typeof updateAuthUI === 'function') updateAuthUI();
+        if (typeof refreshFolderLabel === 'function') refreshFolderLabel();
         localStorage.setItem('lang', LANG);
     }
 
@@ -343,6 +369,18 @@
     }
 
     const NEWS = [
+        { version: "5.2.3", date: "2026-09-26", items: {
+            it: [
+                "📁 Nuovo: Scegli la cartella in cui salvare i file convertiti (sito su Chrome/Edge + app Android con selettore nativo)",
+                "🔐 Nuovo: App Android - permessi per notifiche, storage e multimedia",
+                "🔧 Interno: bridge Cordova caricato solo dentro l'app (parametro ?app=cordova)"
+            ],
+            en: [
+                "📁 New: Choose the folder where converted files are saved (site on Chrome/Edge + Android app with native picker)",
+                "🔐 New: Android app - permissions for notifications, storage and media",
+                "🔧 Internal: Cordova bridge loaded only inside the app (?app=cordova parameter)"
+            ]
+        }},
         { version: "5.2.2", date: "2026-09-25", items: {
             it: [
                 "📱 Nuovo: App mobile - barra di navigazione in basso con icone (stile app)",
@@ -536,7 +574,120 @@
     setTimeout(() => checkForUpdates(false), 3000);
 
     // --- UTILS & CONVERTERS ---
-    function downloadBlob(b, n) { if (window.api && window.api.saveFile) { const r = new FileReader(); r.onload = () => window.api.saveFile(r.result, n.split('.').pop().toLowerCase()); r.readAsArrayBuffer(b); } else { const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=n; a.click(); URL.revokeObjectURL(u); } }
+    // --- CARTELLA DI SALVATAGGIO ---
+    // Sito (PC): File System Access API -> l'utente sceglie una volta, i file finiscono lì.
+    // App Android: cordova-plugin-saf-mediastore -> selettore cartelle nativo.
+    let saveDirHandle = null, saveFolderUri = null;
+    function inApp() { return !!(window.cordova && cordova.plugins && cordova.plugins.safMediastore); }
+    function hasDirPicker() { return typeof window.showDirectoryPicker === 'function'; }
+    function idbOpen() { return new Promise((res, rej) => { const r = indexedDB.open('scp-save', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+    async function idbSet(k, v) { const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+    async function idbGet(k) { const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readonly'); const rq = tx.objectStore('kv').get(k); rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); }); }
+    async function idbDel(k) { const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+    function folderNameFromUri(uri) { try { return decodeURIComponent(String(uri).split('/').pop() || '').replace(/^.*:/, '') || String(uri); } catch (e) { return String(uri); } }
+    function blobToBase64(b) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.readAsDataURL(b); }); }
+
+    async function initSaveFolder() {
+        const btn = document.getElementById('nav-folder');
+        if (!btn) return;
+        if (inApp()) {
+            saveFolderUri = localStorage.getItem('saveFolderUri') || null;
+        } else if (hasDirPicker()) {
+            try {
+                saveDirHandle = await idbGet('saveDirHandle');
+                if (saveDirHandle && await saveDirHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') saveDirHandle = null;
+            } catch (e) { saveDirHandle = null; }
+        } else return;
+        btn.style.display = '';
+        refreshFolderLabel();
+    }
+
+    function refreshFolderLabel() {
+        const sp = document.getElementById('folderLabel');
+        if (!sp) return;
+        const name = inApp() ? (saveFolderUri ? folderNameFromUri(saveFolderUri) : '') : (saveDirHandle ? saveDirHandle.name : '');
+        if (name) { sp.setAttribute('data-custom', ''); sp.textContent = '📁 ' + name.slice(0, 12); }
+        else { sp.removeAttribute('data-custom'); sp.textContent = t('nav.folder'); }
+    }
+
+    async function chooseSaveFolder() {
+        if (inApp()) {
+            try {
+                const uri = await cordova.plugins.safMediastore.selectFolder(saveFolderUri || null);
+                if (uri) { saveFolderUri = uri; localStorage.setItem('saveFolderUri', uri); refreshFolderLabel(); showToast(t('folder.picked') + folderNameFromUri(uri)); }
+            } catch (e) { showToast(t('folder.cancel')); }
+            return;
+        }
+        if (hasDirPicker()) {
+            try {
+                const h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'scp-save' });
+                let p = await h.queryPermission({ mode: 'readwrite' });
+                if (p !== 'granted') p = await h.requestPermission({ mode: 'readwrite' });
+                if (p !== 'granted') { showToast(t('folder.permDenied')); return; }
+                saveDirHandle = h;
+                await idbSet('saveDirHandle', h);
+                refreshFolderLabel();
+                showToast(t('folder.picked') + h.name);
+            } catch (e) {
+                if (e && e.name === 'AbortError') showToast(t('folder.cancel'));
+                else showToast(t('folder.notSupported'));
+            }
+            return;
+        }
+        showToast(t('folder.notSupported'));
+    }
+
+    async function uniqueFileHandle(dir, name) {
+        const dot = name.lastIndexOf('.');
+        const base = dot > 0 ? name.slice(0, dot) : name, ext = dot > 0 ? name.slice(dot) : '';
+        let candidate = name, i = 1;
+        while (i < 100) {
+            try { await dir.getFileHandle(candidate); i++; candidate = base + ' (' + i + ')' + ext; }
+            catch (e) { return dir.getFileHandle(candidate, { create: true }); }
+        }
+        return dir.getFileHandle(name, { create: true });
+    }
+
+    // Restituisce true se il file è stato salvato nella cartella scelta (o nel selettore nativo)
+    async function saveBlob(blob, name) {
+        if (inApp()) {
+            try {
+                const data = await blobToBase64(blob);
+                if (saveFolderUri) await cordova.plugins.safMediastore.writeFile({ data: data, filename: name, folder: saveFolderUri });
+                else await cordova.plugins.safMediastore.saveFile({ data: data, filename: name });
+                return true;
+            } catch (e) {
+                if (/cancel/i.test(String((e && e.message) || e))) return true;
+                console.warn('SAF save failed', e);
+                showToast(t('folder.saveError'));
+                return false;
+            }
+        }
+        if (saveDirHandle) {
+            try {
+                let p = await saveDirHandle.queryPermission({ mode: 'readwrite' });
+                if (p !== 'granted') p = await saveDirHandle.requestPermission({ mode: 'readwrite' });
+                if (p !== 'granted') { saveDirHandle = null; idbDel('saveDirHandle').catch(() => { }); refreshFolderLabel(); return false; }
+                const fh = await uniqueFileHandle(saveDirHandle, name);
+                const w = await fh.createWritable();
+                await w.write(blob);
+                await w.close();
+                return true;
+            } catch (e) { console.warn('Dir save failed', e); return false; }
+        }
+        return false;
+    }
+
+    async function downloadBlob(b, n) {
+        if (window.api && window.api.saveFile) { const r = new FileReader(); r.onload = () => window.api.saveFile(r.result, n.split('.').pop().toLowerCase()); r.readAsArrayBuffer(b); return; }
+        if (await saveBlob(b, n)) return;
+        const u = URL.createObjectURL(b);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = n;
+        a.click();
+        URL.revokeObjectURL(u);
+    }
     function dataUrlToUint8Array(dataUrl) {
         const base64 = dataUrl.split(',')[1];
         const bin = atob(base64);
@@ -706,6 +857,7 @@
     }
     setupAudio(); setupVideo();
     applyLang();
+    initSaveFolder();
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + CURRENT_VERSION);
 </script>
 </body>

@@ -17,8 +17,8 @@
     "path": "./android.keystore",
     "alias": "android"
   },
-  "appVersionName": "5.2.2",
-  "appVersionCode": 522,
+  "appVersionName": "5.2.3",
+  "appVersionCode": 523,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://studioconverterpro.netlify.app/manifest.json",
