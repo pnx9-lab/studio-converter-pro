@@ -312,6 +312,7 @@
             "toast.upToDate": "✅ Sei già all'ultima versione (",
             "toast.updError": "❌ Errore controllo aggiornamenti",
             "toast.error": "❌ Errore: ",
+            "toast.noJsPdf": "libreria PDF non caricata (connessione?)",
             "prog.prep": "Preparazione...", "prog.pdf": "Generazione PDF...",
             "prog.icon": "Creazione ICO...", "prog.render": "Rendering immagine...",
             "prog.done": "Fatto!", "prog.decode": "Decodifica...",
@@ -373,6 +374,7 @@
             "toast.upToDate": "✅ You already have the latest version (",
             "toast.updError": "❌ Error checking for updates",
             "toast.error": "❌ Error: ",
+            "toast.noJsPdf": "PDF library not loaded (connection?)",
             "prog.prep": "Preparing...", "prog.pdf": "Generating PDF...",
             "prog.icon": "Creating ICO...", "prog.render": "Rendering image...",
             "prog.done": "Done!", "prog.decode": "Decoding...",
@@ -1010,7 +1012,11 @@
         try{
             if(fmt==='pdf'){
                 pB.style.width='50%'; pT.textContent=t('prog.pdf');
-                const{jsPDF}=window.jspdf;const p=new jsPDF({orientation:w>h?'l':'p',unit:'px',format:[w,h]});p.addImage(pImg.src,'JPEG',0,0,w,h);p.save('out.pdf');
+                const J=window.jspdf&&window.jspdf.jsPDF; if(!J) throw new Error(t('toast.noJsPdf'));
+                const pw=Math.max(1,Math.round(Number(w)||oW||1)), ph=Math.max(1,Math.round(Number(h)||oH||1));
+                const p=new J({orientation:pw>ph?'l':'p',unit:'px',format:[pw,ph]});
+                p.addImage(pImg.src,'JPEG',0,0,pw,ph);
+                await downloadBlob(p.output('blob'),'out.pdf');
             } else if(fmt==='ico'){
                 pB.style.width='50%'; pT.textContent=t('prog.icon');
                 const c=document.createElement('canvas');c.width=32;c.height=32;c.getContext('2d').drawImage(pImg,0,0,32,32);const blob=await canvasToIcoBlob(c);downloadBlob(blob,'icon.ico');
