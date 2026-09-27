@@ -302,6 +302,15 @@
         </div>
     </div>
 
+    <!-- ARCHIVIO NOVITÀ -->
+    <div id="news-archive" class="modal-overlay" style="display:none; z-index: 2200;">
+        <div class="modal-card" style="border-color: #6366f1;">
+            <h3 style="margin: 0 0 10px 0;" data-i18n="news.archiveTitle">📦 Archivio novità</h3>
+            <div id="news-archive-list" style="max-height: 55vh; overflow-y: auto; padding-right: 4px;"></div>
+            <button type="button" onclick="closeNewsArchive()" class="btn-convert" style="width: 100%; margin-top: 12px;" data-i18n="news.close">✖ Chiudi</button>
+        </div>
+    </div>
+
 <script>
     const CURRENT_VERSION = "5.2.4";
     const VERSION_URL = "version.json";
@@ -321,6 +330,7 @@
             "btn.downloadDesktop": "⬇️ Scarica Desktop App",
             "btn.downloadApk": "📱 Scarica APK (Android)",
             "news.title": "📢 Novità",
+            "news.archive": "📦 Archivio novità", "news.archiveTitle": "📦 Archivio novità", "news.close": "✖ Chiudi", "news.empty": "Nessuna novità archiviata",
             "img.h2": "🖼️ Studio Immagini",
             "img.select": "Seleziona Immagine", "img.drag": "Trascina qui o clicca",
             "img.format": "Formato Output", "img.width": "Larghezza", "img.height": "Altezza",
@@ -393,6 +403,7 @@
             "btn.downloadDesktop": "⬇️ Download Desktop App",
             "btn.downloadApk": "📱 Download APK (Android)",
             "news.title": "📢 What's New",
+            "news.archive": "📦 Archive", "news.archiveTitle": "📦 What's New Archive", "news.close": "✖ Close", "news.empty": "No archived news yet",
             "img.h2": "🖼️ Image Studio",
             "img.select": "Select Image", "img.drag": "Drag here or click",
             "img.format": "Output Format", "img.width": "Width", "img.height": "Height",
@@ -597,12 +608,9 @@
         }}
     ];
 
-    function renderNews() {
-        const container = document.getElementById('news-list');
-        if (!container) return;
-        container.innerHTML = NEWS.map(n => {
-            const items = n.items[LANG] || n.items.it;
-            return `
+    function newsCard(n) {
+        const items = n.items[LANG] || n.items.it;
+        return `
             <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid #6366f1;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
                     <strong>v${n.version}</strong><span style="color:var(--text-muted)">${n.date}</span>
@@ -612,8 +620,26 @@
                 </ul>
             </div>
         `;
-        }).join('');
     }
+    function currentNews() { return NEWS.filter(n => n.version === CURRENT_VERSION); }
+    function archiveNews() { return NEWS.filter(n => n.version !== CURRENT_VERSION); }
+
+    function renderNews() {
+        const container = document.getElementById('news-list');
+        if (!container) return;
+        const cur = currentNews();
+        const old = archiveNews();
+        container.innerHTML = (cur.length ? cur.map(newsCard).join('') : newsCard({ version: CURRENT_VERSION, date: '', items: { it: [t('news.empty')], en: [t('news.empty')] } }))
+            + (old.length ? `<button type="button" onclick="openNewsArchive()" class="setting-btn" style="width:100%; margin-top:2px;" data-i18n="news.archive">📦 Archivio novità</button>` : '');
+    }
+    function openNewsArchive() {
+        const c = document.getElementById('news-archive-list');
+        if (!c) return;
+        const old = archiveNews();
+        c.innerHTML = old.length ? old.map(newsCard).join('') : `<p style="color:var(--text-muted); font-size:13px;">${t('news.empty')}</p>`;
+        document.getElementById('news-archive').style.display = 'flex';
+    }
+    function closeNewsArchive() { document.getElementById('news-archive').style.display = 'none'; }
 
     function switchTab(t) {
         document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
@@ -827,6 +853,19 @@
     }
     setTimeout(() => { scheduleUpdateCheck(inApp() ? 1500 : 5000); }, 0);
     setTimeout(maybeAskNotif, 600);
+
+    // Controllo "è cambiato qualcosa": il server invia la push solo se version/build sono nuovi
+    setTimeout(() => {
+        try {
+            if (sessionStorage.getItem('notifyCheck')) return;
+            sessionStorage.setItem('notifyCheck', '1');
+            fetch('/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{"check":true}'
+            }).catch(() => { });
+        } catch (e) { }
+    }, 12000);
     if (inApp() && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
 
     async function checkForUpdates(manual = false) {
