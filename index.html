@@ -901,7 +901,7 @@
             }
             if (show) {
                 document.getElementById('new-version-num').textContent = apkVer;
-                document.getElementById('upd-current-ver').textContent = appVer || data.apk_from || '5.2.3';
+                document.getElementById('upd-current-ver').textContent = appVer || data.apk_from || '5.2.4';
                 resetUpdateUi();
                 if (inApp() && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
                 document.getElementById('update-popup').style.display = 'flex';
