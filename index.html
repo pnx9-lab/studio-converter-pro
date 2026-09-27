@@ -52,6 +52,7 @@
         <div class="hero-section">
             <h1 class="hero-title" data-i18n="home.title">Studio Converter Suite</h1>
             <p class="subtitle" data-i18n="home.subtitle">Tutti i formati. Immagini, Video, Audio. Zero limiti.</p>
+            <button type="button" id="homeUpdBtn" class="btn-convert" style="display:none; margin-top:18px; margin-left:auto; margin-right:auto; max-width:360px;" onclick="homeUpdateNow()" data-i18n="upd.now">AGGIORNA ORA</button>
             <div class="features-grid">
                 <div class="feature-card" onclick="switchTab('img')"><div class="f-icon">🖼️</div><h3 data-i18n="feat.img">Immagini</h3><p>JPG, PNG, WEBP, AVIF, ICO, PDF.</p></div>
                 <div class="feature-card" onclick="switchTab('video')"><div class="f-icon">🎬</div><h3 data-i18n="feat.video">Video</h3><p>MP4, WEBM, MOV, GIF, MKV, AVI.</p></div>
@@ -255,14 +256,14 @@
             </div>
             <div id="downloadsList" class="dl-list" style="display:none;"></div>
 
-            <div class="setting-row">
+            <div class="setting-row" data-newui="1">
                 <span class="setting-label" data-i18n="set.apps">🔄 App e aggiornamenti</span>
                 <div class="setting-actions">
                     <button type="button" class="setting-btn" onclick="checkForUpdates(true)" data-i18n="btn.checkUpdatesShort">🔍 Controlla</button>
                 </div>
             </div>
 
-            <div class="setting-row">
+            <div class="setting-row" data-newui="1">
                 <span class="setting-label" data-i18n="set.appsDl">⬇️ Scarica app</span>
                 <div class="setting-actions">
                     <a class="setting-btn" href="https://download942.mediafire.com/kmu0q9xf029g7e5l2reVgHnzyKTGDXq8Q-SY2H1VOzAoy0AIOzYeYF_Ok-E9K-jOdVlQEn4Smyk6Zb54X8jLiCK63h5NNN7yn1nuAEVPCdKA2_GjXHGrT9NIecJuYKBuHCCXad7RnaP4mSvkbhXWJfKwGbZTtZ3ynv69P_yDIA/6elxecq4l485h9v/StudioConverterPro-Setup-5.2.3.exe" download="StudioConverterPro-Setup-5.2.3.exe" target="_blank" rel="noopener" data-i18n="btn.desktopShort">💻 Desktop</a>
@@ -287,6 +288,17 @@
             </div>
             <button onclick="downloadUpdate()" class="btn-convert" id="upd-now-btn" style="width: 100%;" data-i18n="upd.now">AGGIORNA ORA</button>
             <button onclick="laterUpdate()" style="width: 100%; background: transparent; border: none; color: var(--text-muted); margin-top: 10px; cursor: pointer; font-size: 12px;" data-i18n="upd.later">Più tardi</button>
+        </div>
+    </div>
+
+    <!-- PERMESSO NOTIFICHE (primo avvio in app) -->
+    <div id="notif-popup" class="modal-overlay" style="display:none; z-index: 2100;">
+        <div class="modal-card" style="border-color: #22c55e;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🔔</div>
+            <h3 style="margin: 0 0 10px 0;" data-i18n="notif.title">Consenti le notifiche</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 18px;" data-i18n="notif.text">Attiva le notifiche per ricevere avvisi su aggiornamenti e novità dell'app.</p>
+            <button type="button" onclick="askNotif(true)" class="btn-convert" style="width: 100%;" data-i18n="notif.allow">SÌ, CONSENTI</button>
+            <button type="button" onclick="askNotif(false)" style="width: 100%; background: transparent; border: none; color: var(--text-muted); margin-top: 10px; cursor: pointer; font-size: 12px;" data-i18n="notif.later">Non ora</button>
         </div>
     </div>
 
@@ -328,6 +340,7 @@
             "upd.title": "Nuova Versione Disponibile!",
             "upd.textPre": "È uscita la versione ", "upd.textPost": ".",
             "upd.now": "AGGIORNA ORA", "upd.later": "Più tardi",
+            "notif.title": "Consenti le notifiche", "notif.text": "Attiva le notifiche per ricevere avvisi su aggiornamenti e novità dell'app.", "notif.allow": "SÌ, CONSENTI", "notif.later": "Non ora",
             "upd.from": "La tua versione: ", "upd.dl": "Scaricamento aggiornamento...", "upd.ready": "Scaricato! Conferma l'installazione",
             "toast.created": "✅ Account creato! Ora fai login.",
             "toast.createdDb": "✅ Account creato e salvato nel database!",
@@ -399,6 +412,7 @@
             "upd.title": "New Version Available!",
             "upd.textPre": "Version ", "upd.textPost": " is out.",
             "upd.now": "UPDATE NOW", "upd.later": "Later",
+            "notif.title": "Enable notifications", "notif.text": "Turn on notifications to get app updates and news.", "notif.allow": "YES, ALLOW", "notif.later": "Not now",
             "upd.from": "Your version: ", "upd.dl": "Downloading update...", "upd.ready": "Downloaded! Confirm the installation",
             "toast.created": "✅ Account created! Now log in.",
             "toast.createdDb": "✅ Account created and saved to the database!",
@@ -739,6 +753,82 @@
         } catch (e) { }
         return '';
     }
+    // --- BLOCCO: novità visibili solo da 5.2.4 in su (in app) ---
+    const NEW_UI_FROM = '5.2.4';
+    function verGte(a, b) {
+        const pa = String(a || '').split('.'), pb = String(b || '').split('.');
+        for (let i = 0; i < 3; i++) {
+            const x = parseInt(pa[i], 10) || 0, y = parseInt(pb[i], 10) || 0;
+            if (x > y) return true;
+            if (x < y) return false;
+        }
+        return true;
+    }
+    function applyUiGate() {
+        const rows = document.querySelectorAll('[data-newui="1"]');
+        if (!rows.length) return;
+        const show = () => rows.forEach(r => { r.style.display = ''; });
+        const hide = () => rows.forEach(r => { r.style.display = 'none'; });
+        if (!inApp()) { show(); return; }
+        appVersion().then(v => { (v && verGte(v, NEW_UI_FROM)) ? show() : hide(); }).catch(hide);
+    }
+    applyUiGate();
+
+    // --- PULSANTE "AGGIORNA ORA" IN HOME (dopo "Più tardi") ---
+    function showHomeUpdBtn(on) {
+        const b = document.getElementById('homeUpdBtn');
+        if (!b) return;
+        if (on && inApp()) {
+            b.style.display = 'block';
+            try { localStorage.setItem('updPending', '1'); } catch (e) { }
+        } else {
+            b.style.display = 'none';
+            if (!on) { try { localStorage.removeItem('updPending'); } catch (e) { } }
+        }
+    }
+    function homeUpdateNow() {
+        checkForUpdates(false);
+    }
+
+    // --- PERMESSO NOTIFICHE (primo avvio in app) ---
+    function notifAsked() {
+        try { return localStorage.getItem('notifAsked') === '1'; } catch (e) { return true; }
+    }
+    function askNotif(grant) {
+        document.getElementById('notif-popup').style.display = 'none';
+        try { localStorage.setItem('notifAsked', '1'); } catch (e) { }
+        if (!grant) return;
+        try {
+            const fm = (window.cordova && cordova.plugins && cordova.plugins.firebase
+                && cordova.plugins.firebase.messaging) ? cordova.plugins.firebase.messaging : null;
+            if (!fm) return;
+            Promise.resolve()
+                .then(() => (typeof fm.requestPermission === 'function') ? fm.requestPermission({ forceShow: true }) : null)
+                .then(() => (typeof fm.subscribe === 'function') ? fm.subscribe('aggiornamenti') : null)
+                .catch(() => { });
+        } catch (e) { }
+    }
+    function maybeAskNotif() {
+        try {
+            if (!inApp() || notifAsked()) return false;
+            if (!window.cordova) return false;
+            const fm = (cordova.plugins && cordova.plugins.firebase && cordova.plugins.firebase.messaging);
+            if (!fm || typeof fm.requestPermission !== 'function') return false;
+            document.getElementById('notif-popup').style.display = 'flex';
+            return true;
+        } catch (e) { return false; }
+    }
+    function scheduleUpdateCheck(delay) {
+        setTimeout(() => {
+            const np = document.getElementById('notif-popup');
+            if (np && np.style.display === 'flex') { scheduleUpdateCheck(2500); return; }
+            checkForUpdates(false);
+        }, delay);
+    }
+    setTimeout(() => { scheduleUpdateCheck(inApp() ? 1500 : 5000); }, 0);
+    setTimeout(maybeAskNotif, 600);
+    if (inApp() && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
+
     async function checkForUpdates(manual = false) {
         try {
             const response = await fetch(VERSION_URL + '?t=' + new Date().getTime());
@@ -756,9 +846,11 @@
                 document.getElementById('new-version-num').textContent = apkVer;
                 document.getElementById('upd-current-ver').textContent = appVer || data.apk_from || '5.2.3';
                 resetUpdateUi();
+                if (inApp() && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
                 document.getElementById('update-popup').style.display = 'flex';
-            } else if (manual) {
-                showToast(t('toast.upToDate') + (appVer || CURRENT_VERSION) + ')');
+            } else {
+                showHomeUpdBtn(false);
+                if (manual) showToast(t('toast.upToDate') + (appVer || CURRENT_VERSION) + ')');
             }
         } catch (e) { if (manual) showToast(t('toast.updError')); }
     }
@@ -790,9 +882,10 @@
         document.getElementById('update-popup').style.display = 'none';
         resetUpdateUi();
     }
-    function laterUpdate() { closeUpdate(true); }
+    function laterUpdate() { closeUpdate(true); showHomeUpdBtn(true); }
     function downloadUpdate() {
         if (!latestVersionData) return;
+        showHomeUpdBtn(false);
         const inAppNow = inApp();
         if (!inAppNow) {
             closeUpdate(false);
@@ -824,16 +917,17 @@
                     showToast(t('upd.ready'));
                 } catch (e) {
                     closeUpdate(true);
+                    showHomeUpdBtn(true);
                     window.open(url, '_system');
                 }
             })();
             return;
         }
         closeUpdate(true);
+        showHomeUpdBtn(true);
         window.open(url, '_system');
     }
     setInterval(() => checkForUpdates(false), 300000);
-    setTimeout(() => checkForUpdates(false), 5000);
 
     // --- UTILS & CONVERTERS ---
     // --- CARTELLA DI SALVATAGGIO ---
