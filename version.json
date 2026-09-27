@@ -2,8 +2,8 @@
   "version": "5.2.5",
   "apk_version": "5.2.5",
   "apk_from": "5.2.4",
-  "build": 0,
-  "changes": "Nuova icona, privacy policy aggiornata, hosting solo Cloudflare Pages, estrazione audio 100% locale",
+  "build": 1,
+  "changes": "Fix: estrazione audio da video (MP3/WAV/OGG) ora funziona davvero, al 100% locale sul dispositivo",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
