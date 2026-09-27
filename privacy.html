@@ -47,9 +47,9 @@
     </div>
     <div class="card">
         <h1>Privacy Policy</h1>
-        <p class="updated">Ultimo aggiornamento: 26 settembre 2026 — Studio Converter Pro Suite v5.2.3</p>
+        <p class="updated">Ultimo aggiornamento: 27 settembre 2026 — Studio Converter Pro Suite v5.2.5</p>
 
-        <p>La tua privacy è importante per noi. Questa pagina spiega quali dati vengono trattati quando usi <strong>Studio Converter Pro Suite</strong> (disponibile su https://studioconverterpro.netlify.app) e come vengono utilizzati.</p>
+        <p>La tua privacy è importante per noi. Questa pagina spiega quali dati vengono trattati quando usi <strong>Studio Converter Pro Suite</strong> (disponibile su https://studioconverterpro.pages.dev, sia come sito che come app Android) e come vengono utilizzati.</p>
 
         <h2>1. Titolare del trattamento</h2>
         <p>Titolare del trattamento: <strong>PNX</strong><br>
@@ -58,41 +58,45 @@
         <h2>2. Dati che raccogliamo</h2>
         <p>L'app funziona quasi interamente <strong>in locale</strong>, sul tuo dispositivo. In particolare:</p>
         <ul>
-            <li><strong>Conversioni di file</strong>: immagini, video e audio vengono elaborati nel tuo browser/giudizio del tuo dispositivo. I file che carichi <strong>non vengono memorizzati</strong> sui nostri server.</li>
-            <li><strong>Account locale</strong>: se crei un account, username e password restano salvati solo nel <strong>localStorage</strong> del tuo browser (la password viene salvata come hash, non in chiaro). Nessun dato di account viene trasmesso a noi.</li>
-            <li><strong>Estrazione audio da video</strong>: quando usi la funzione lato server, il file viene inviato temporaneamente per l'elaborazione, restituito e <strong>cancellato subito dopo</strong> dall'elaborazione.</li>
+            <li><strong>Conversioni di file</strong>: immagini, video e audio vengono elaborati nel tuo browser o sul tuo dispositivo. I file che carichi <strong>non vengono memorizzati</strong> sui nostri server.</li>
+            <li><strong>Estrazione audio da video</strong>: l'operazione avviene <strong>interamente in locale</strong> nel browser: il video <strong>non viene mai inviato</strong> a un server.</li>
+            <li><strong>Account</strong>: se crei un account, salviamo su un database cifrato (Cloudflare KV) solo il tuo <strong>username</strong> e l'<strong>hash SHA-256</strong> della password (mai la password in chiaro) per farti funzionare lo stesso account su PC, telefono e app. La password nel tuo dispositivo resta comunque salvata come hash nel browser.</li>
+            <li><strong>Notifiche push</strong>: se attivi le notifiche, il dispositivo viene registrato <strong>per topic</strong> (es. "aggiornamenti") tramite Firebase Cloud Messaging di Google. Non raccogliamo né memorizziamo indirizzi email, numeri di telefono o identità personali per le notifiche: servono solo ad avvisarti quando esce una nuova versione o quando cambia qualcosa nel sito.</li>
+            <li><strong>Versione e aggiornamenti</strong>: all'apertura l'app scarica un piccolo file (version.json) con la versione corrente, per proporti l'aggiornamento. Non contiene dati personali.</li>
         </ul>
 
         <h2>3. Cookie e tracciamento</h2>
         <p>Non utilizziamo cookie di profilazione, pubblicità né strumenti di analytics. Vengono utilizzati solo:</p>
         <ul>
-            <li>memorizzazione locale (<strong>localStorage</strong>) per login e preferenze;</li>
-            <li><strong>cache del service worker</strong> per far funzionare l'app offline.</li>
+            <li>memorizzazione locale (<strong>localStorage</strong>) per login, preferenze e lingua;</li>
+            <li><strong>cache del service worker</strong> per far funzionare l'app offline;</li>
+            <li><strong>IndexedDB/cache</strong> per salvare i file che scegli di archiviare nel tuo dispositivo.</li>
         </ul>
 
         <h2>4. Servizi di terze parti</h2>
         <ul>
-            <li><strong>Netlify</strong> — hosting del sito e delle funzioni di elaborazione (indirizzo IP e log tecnici di accesso gestiti da Netlify).</li>
+            <li><strong>Cloudflare (Cloudflare Pages / Workers / KV)</strong> — hosting del sito, delle funzioni server (login, notifiche) e del database degli account (indirizzo IP e log tecnici di accesso gestiti da Cloudflare).</li>
+            <li><strong>Google Firebase Cloud Messaging</strong> — invio delle notifiche push di aggiornamento (gestito da Google, secondo la sua privacy policy).</li>
             <li><strong>CDN (cdnjs / jsDelivr)</strong> — forniscono le librerie JavaScript necessarie al funzionamento.</li>
-            <li><strong>GitHub</strong> — repository pubblico del progetto e rilascio dei download.</li>
+            <li><strong>GitHub</strong> — repository pubblico del progetto e rilascio degli aggiornamenti APK.</li>
             <li><strong>MediaFire</strong> — ospita il pacchetto dell'app desktop scaricabile.</li>
         </ul>
         <p>Per questi servizi valgono le rispettive privacy policy.</p>
 
         <h2>5. Conservazione dei dati</h2>
-        <p>Non conserviamo file caricati né contenuti convertiti. I file inviati per l'estrazione audio vengono eliminati automaticamente al termine dell'operazione.</p>
+        <p>Non conserviamo file caricati né contenuti convertiti. Gli account restano nel database finché non ne richiedi la cancellazione. Le notifiche push vengono inviate solo in caso di cambiamenti al sito/versione e puoi disattivarle in qualsiasi momento dal tuo dispositivo.</p>
 
         <h2>6. I tuoi diritti (GDPR)</h2>
         <p>Puoi in qualsiasi momento:</p>
         <ul>
             <li>richiedere informazioni sui dati che ti riguardano;</li>
-            <li>chiedere la cancellazione di eventuali dati;</li>
+            <li>chiedere la cancellazione del tuo account e di eventuali dati;</li>
             <li>revocare il consenso al trattamento.</li>
         </ul>
-        <p>Basta scrivere a <a href="mailto:supportpnx007@gmail.com">supportpnx007@gmail.com</a>. Per i dati salvati nel tuo browser puoi eliminarli tu stesso cancellando i dati del sito/della cache dal browser o disinstallando la PWA.</p>
+        <p>Basta scrivere a <a href="mailto:supportpnx007@gmail.com">supportpnx007@gmail.com</a>. Per i dati salvati nel tuo browser puoi eliminarli tu stesso cancellando i dati del sito/dalla cache o disinstallando la PWA. Puoi inoltre disattivare le notifiche dalle impostazioni del tuo sistema.</p>
 
         <h2>7. Modifiche</h2>
-        <p>Questa privacy policy può essere aggiornata. La versione sempre vigente è pubblicata a questa pagina.</p>
+        <p>Questa privacy policy viene aggiornata ad ogni cambiamento rilevante del sito o dell'app (ad esempio quando cambia la versione). La versione sempre vigente è pubblicata a questa pagina.</p>
 
         <h2>8. Contatti</h2>
         <p>Domande, richieste o segnalazioni: <a href="mailto:supportpnx007@gmail.com">supportpnx007@gmail.com</a></p>

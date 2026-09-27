@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.4</title>
+    <title>Studio Converter Pro Suite v5.2.5</title>
     
-    <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
+    <!-- FAVICON SVG (freccia di conversione su gradiente indaco→ciano) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon-192.png">
     
@@ -312,7 +312,7 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.2.4";
+    const CURRENT_VERSION = "5.2.5";
     const VERSION_URL = "version.json";
     const APK_URL = "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk";
 
@@ -369,6 +369,7 @@
             "prog.done": "Fatto!", "prog.decode": "Decodifica...",
             "prog.encoding": "Codifica ", "prog.noRecorder": "non supportato dal browser. Fallback WAV...",
             "prog.sendServer": "Invio al server...", "prog.download": "Download...",
+            "prog.extract": "Estrazione audio in corso...", "toast.extractFmt": "Formato richiesto non disponibile: salvato come ",
             "prog.gifFallback": "GIF non supportata nativamente, uso WEBM...",
             "prog.fallbackWebm": "non supportato, fallback WEBM...",
             "err.extract": "Estrazione audio fallita: ", "err.network": "Errore rete",
@@ -442,6 +443,7 @@
             "prog.done": "Done!", "prog.decode": "Decoding...",
             "prog.encoding": "Encoding ", "prog.noRecorder": "not supported by browser. Falling back to WAV...",
             "prog.sendServer": "Sending to server...", "prog.download": "Download...",
+            "prog.extract": "Extracting audio...", "toast.extractFmt": "Requested format unavailable: saved as ",
             "prog.gifFallback": "GIF not supported natively, using WEBM...",
             "prog.fallbackWebm": "not supported, falling back to WEBM...",
             "err.extract": "Audio extraction failed: ", "err.network": "Network error",
@@ -502,6 +504,22 @@
     }
 
     const NEWS = [
+        { version: "5.2.5", date: "2026-09-27", items: {
+            it: [
+                "🎨 Nuova icona: freccia di conversione su sfondo indaco→ciano (sito e app)",
+                "🔒 Privacy Policy aggiornata: Cloudflare Pages, notifiche push e account sincronizzato",
+                "🧹 Pulizia totale: il sito vive solo su Cloudflare Pages (vecchio hosting rimosso)",
+                "🎙️ Estrazione audio da video ora 100% locale (nessun file inviato a un server)",
+                "📦 Novità: solo la versione corrente in Home + archivio consultabile"
+            ],
+            en: [
+                "🎨 New icon: conversion arrow on an indigo→cyan background (site and app)",
+                "🔒 Privacy Policy updated: Cloudflare Pages, push notifications and synced account",
+                "🧹 Cleanup: the site lives only on Cloudflare Pages (old host removed)",
+                "🎙️ Video audio extraction now 100% local (no file ever sent to a server)",
+                "📦 News: only the current version on Home + browsable archive"
+            ]
+        }},
         { version: "5.2.4", date: "2026-09-27", items: {
             it: [
                 "✅ Fix: conversione immagini→PDF che bloccava l'app su dispositivi più lenti",
@@ -558,20 +576,20 @@
         }},
         { version: "5.2.0", date: "2026-09-20", items: {
             it: [
-                "✅ Nuovo: Estrazione audio da video lato server (Netlify Function + ffmpeg)",
+                "✅ Nuovo: Estrazione audio da video lato server (function + ffmpeg)",
                 "✅ Nuovo: Supporto formati MP3, WAV, FLAC, OGG, AAC, M4A, OPUS",
                 "✅ Nuovo: Notifiche aggiornamenti solo nel sito (modal + toast, niente browser)",
                 "✅ Fix: Estrazione audio affidabile senza MediaRecorder (tempo reale)",
                 "✅ Fix: Service worker cache aggiornato a v5.2.0",
-                "✅ Fix: Netlify Function deploy automatico su push"
+                "✅ Fix: deploy automatico della function su push"
             ],
             en: [
-                "✅ New: Server-side audio extraction from video (Netlify Function + ffmpeg)",
+                "✅ New: Server-side audio extraction from video (function + ffmpeg)",
                 "✅ New: Support for MP3, WAV, FLAC, OGG, AAC, M4A, OPUS formats",
                 "✅ New: Update notifications in-site only (modal + toast, no browser prompts)",
                 "✅ Fix: Reliable audio extraction without MediaRecorder (real time)",
                 "✅ Fix: Service worker cache updated to v5.2.0",
-                "✅ Fix: Netlify Function auto-deploy on push"
+                "✅ Fix: function auto-deploy on push"
             ]
         }},
         { version: "5.1.0", date: "2026-09-19", items: {
@@ -677,10 +695,10 @@
         }
         return text;
     }
-    // --- DATABASE CREDENZIALI CONDIVISO (function Netlify o Cloudflare Pages) ---
+    // --- DATABASE CREDENZIALI CONDIVISO (Cloudflare Pages Function) ---
     // Ogni nuova registrazione viene salvata nel database: lo stesso account
     // funziona su PC, telefono e app. Se il database non risponde si resta su locale.
-    const CRED_FN = ['/.netlify/functions/credentials', '/credentials'];
+    const CRED_FN = ['/credentials'];
     let credFnOk = null;
     async function remoteCreds(action, u, p) {
         const tries = credFnOk ? [credFnOk] : CRED_FN;
@@ -1222,6 +1240,42 @@
         return false;
     }
 
+    // Estrazione audio 100% locale: registra la traccia audio del video nel browser
+    async function extractAudioLocal(vid, onPct) {
+        if (!window.MediaRecorder) throw new Error('MediaRecorder');
+        let stream = null;
+        try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            const ac = new AC();
+            if (ac.state === 'suspended') { try { await ac.resume(); } catch (e) { } }
+            const src = ac.createMediaElementSource(vid);
+            const dest = ac.createMediaStreamDestination();
+            src.connect(dest); // non collegato alle casse: estrazione in silenzio
+            stream = dest.stream;
+        } catch (e) {
+            stream = vid.captureStream ? vid.captureStream() : vid.mozCaptureStream();
+        }
+        const tracks = stream.getAudioTracks();
+        if (!tracks.length) throw new Error('audio');
+        const mime = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(m => MediaRecorder.isTypeSupported(m));
+        if (!mime) throw new Error('MediaRecorder');
+        const ext = mime.indexOf('audio/ogg') === 0 ? 'ogg' : 'webm';
+        return new Promise((resolve, reject) => {
+            try {
+                const rec = new MediaRecorder(tracks, { mimeType: mime });
+                const chunks = [];
+                rec.ondataavailable = ev => { if (ev.data && ev.data.size) chunks.push(ev.data); };
+                rec.onerror = ev => reject((ev.error && ev.error.message) || new Error('recorder'));
+                rec.onstop = () => resolve({ blob: new Blob(chunks, { type: mime }), ext: ext });
+                vid.currentTime = 0;
+                if (onPct) vid.ontimeupdate = () => { try { onPct((vid.currentTime / (vid.duration || 1)) * 100); } catch (e2) { } };
+                vid.onended = () => setTimeout(() => { try { if (rec.state !== 'inactive') rec.stop(); } catch (e3) { } }, 350);
+                rec.start();
+                const pr = vid.play();
+                if (pr && pr.catch) pr.catch(() => { });
+            } catch (e4) { reject(e4); }
+        });
+    }
     async function downloadBlob(b, n) {
         if (window.api && window.api.saveFile) { const r = new FileReader(); r.onload = () => window.api.saveFile(r.result, n.split('.').pop().toLowerCase()); r.readAsArrayBuffer(b); addDownload(n, b.size); return; }
         if (await saveBlob(b, n)) { addDownload(n, b.size); return; }
@@ -1393,36 +1447,20 @@
                 
                 if(isAudioExtract){
                     const audioFmt=document.getElementById('audioFormatSelect-video').value;
-                    pT.textContent=t('prog.sendServer');
-                    pB.style.width='10%';
-                    
+                    pT.textContent=t('prog.extract');
+                    pB.style.width='5%';
+
                     try {
-                        const formData = new FormData();
-                        formData.append('video', cur);
-                        formData.append('format', audioFmt);
-                        
-                        // Progresso upload
-                        const xhr = new XMLHttpRequest();
-                        xhr.upload.onprogress = e => {
-                            if (e.lengthComputable) {
-                                const pct = Math.round((e.loaded / e.total) * 50);
-                                pB.style.width = pct + '%';
-                                pT.textContent = `Upload: ${pct}%`;
-                            }
-                        };
-                        
-                        const response = await new Promise((resolve, reject) => {
-                            xhr.open('POST', '/.netlify/functions/extract-audio');
-                            xhr.responseType = 'blob';
-                            xhr.onload = () => xhr.status === 200 ? resolve(xhr.response) : reject(new Error('Server error: ' + xhr.status));
-                            xhr.onerror = () => reject(new Error(t('err.network')));
-                            xhr.send(formData);
+                        // Estrazione audio 100% locale: nessun file lascia il dispositivo
+                        const out = await extractAudioLocal(vid, (pct) => {
+                            pB.style.width = Math.max(5, Math.min(99, pct)) + '%';
                         });
-                        
+
                         pB.style.width = '100%';
                         pT.textContent = t('prog.download');
-                        downloadBlob(response, 'extracted.' + audioFmt);
-                        
+                        if (out.ext !== audioFmt) showToast(t('toast.extractFmt') + out.ext);
+                        await downloadBlob(out.blob, 'extracted.' + out.ext);
+
                         btn.disabled = false; btn.removeAttribute('data-custom'); btn.textContent = t('common.convert');
                         return;
                     } catch(e) {

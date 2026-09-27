@@ -1,9 +1,9 @@
 {
-  "version": "5.2.4",
-  "apk_version": "5.2.4",
-  "apk_from": "5.2.3",
-  "build": 1,
-  "changes": "Notifiche attivabili all'avvio, aggiornamento mostrato subito all'apertura, pulsante AGGIORNA ORA in Home, Novità con archivio consultabile",
+  "version": "5.2.5",
+  "apk_version": "5.2.5",
+  "apk_from": "5.2.4",
+  "build": 0,
+  "changes": "Nuova icona, privacy policy aggiornata, hosting solo Cloudflare Pages, estrazione audio 100% locale",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
