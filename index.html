@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.3</title>
+    <title>Studio Converter Pro Suite v5.2.4</title>
     
     <!-- FAVICON SVG LIQUID GLASS (Ora si vedrà su Chrome, Opera, ecc!) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -57,9 +57,6 @@
                 <div class="feature-card" onclick="switchTab('video')"><div class="f-icon">🎬</div><h3 data-i18n="feat.video">Video</h3><p>MP4, WEBM, MOV, GIF, MKV, AVI.</p></div>
                 <div class="feature-card" onclick="switchTab('audio')"><div class="f-icon">🎵</div><h3 data-i18n="feat.audio">Audio</h3><p>MP3, WAV, OGG, AAC, FLAC, M4A.</p></div>
             </div>
-            <button onclick="checkForUpdates(true)" style="margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 12px;" data-i18n="btn.checkUpdates">🔍 Controlla Aggiornamenti</button>
-            <a href="http://www.mediafire.com/file/utp8zbyq2kn3l35/Studio_Converter_Pro-win32-x64.7z" download="Studio_Converter_Pro-win32-x64.7z" style="margin-top: 15px; display: inline-block; background: #6366f1; color: white; padding: 12px 28px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: bold;" data-i18n="btn.downloadDesktop">⬇️ Scarica Desktop App</a>
-            <a href="https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk" download="studiopro.apk" target="_blank" rel="noopener" style="margin-top: 15px; margin-left: 8px; display: inline-block; background: #22c55e; color: white; padding: 12px 28px; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: bold;" data-i18n="btn.downloadApk">📱 Scarica APK (Android)</a>
             <div id="news-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
                 <h3 style="margin: 0 0 15px 0; font-size: 18px;" data-i18n="news.title">📢 Novità</h3>
                 <div id="news-list"></div>
@@ -257,6 +254,21 @@
                 <button type="button" class="setting-btn ghost" onclick="clearDownloads()" data-i18n="set.dlClear">Svuota</button>
             </div>
             <div id="downloadsList" class="dl-list" style="display:none;"></div>
+
+            <div class="setting-row">
+                <span class="setting-label" data-i18n="set.apps">🔄 App e aggiornamenti</span>
+                <div class="setting-actions">
+                    <button type="button" class="setting-btn" onclick="checkForUpdates(true)" data-i18n="btn.checkUpdatesShort">🔍 Controlla</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label" data-i18n="set.appsDl">⬇️ Scarica app</span>
+                <div class="setting-actions">
+                    <a class="setting-btn" href="http://www.mediafire.com/file/utp8zbyq2kn3l35/Studio_Converter_Pro-win32-x64.7z" download="Studio_Converter_Pro-win32-x64.7z" data-i18n="btn.desktopShort">💻 Desktop</a>
+                    <a class="setting-btn apk" href="https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk" download="studiopro.apk" target="_blank" rel="noopener" data-i18n="btn.apkShort">📱 APK</a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -265,15 +277,23 @@
         <div class="modal-card" style="border-color: #6366f1;">
             <div style="font-size: 40px; margin-bottom: 10px;">🚀</div>
             <h3 style="margin: 0 0 10px 0;" data-i18n="upd.title">Nuova Versione Disponibile!</h3>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;"><span data-i18n="upd.textPre">È uscita la versione </span><span id="new-version-num"></span><span data-i18n="upd.textPost">.</span></p>
-            <button onclick="downloadUpdate()" class="btn-convert" style="width: 100%;" data-i18n="upd.now">AGGIORNA ORA</button>
-            <button onclick="document.getElementById('update-popup').style.display='none'" style="width: 100%; background: transparent; border: none; color: var(--text-muted); margin-top: 10px; cursor: pointer; font-size: 12px;" data-i18n="upd.later">Più tardi</button>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;"><span data-i18n="upd.textPre">È uscita la versione </span><span id="new-version-num"></span><span data-i18n="upd.textPost">.</span></p>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 18px;"><span data-i18n="upd.from">La tua versione: </span><span id="upd-current-ver"></span></p>
+            <div id="upd-progress-wrap" style="display:none; margin-bottom: 16px;">
+                <div style="height:8px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden;">
+                    <div id="upd-progress-bar" style="height:100%; width:0%; background:#22c55e; transition:width .25s;"></div>
+                </div>
+                <div id="upd-progress-text" style="font-size:12px; color:var(--text-muted); margin-top:6px;"></div>
+            </div>
+            <button onclick="downloadUpdate()" class="btn-convert" id="upd-now-btn" style="width: 100%;" data-i18n="upd.now">AGGIORNA ORA</button>
+            <button onclick="laterUpdate()" style="width: 100%; background: transparent; border: none; color: var(--text-muted); margin-top: 10px; cursor: pointer; font-size: 12px;" data-i18n="upd.later">Più tardi</button>
         </div>
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.2.3";
+    const CURRENT_VERSION = "5.2.4";
     const VERSION_URL = "version.json";
+    const APK_URL = "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk";
 
     // --- I18N (Italiano / English) ---
     const I18N = {
@@ -283,6 +303,9 @@
             "home.subtitle": "Tutti i formati. Immagini, Video, Audio. Zero limiti.",
             "feat.img": "Immagini", "feat.video": "Video", "feat.audio": "Audio",
             "btn.checkUpdates": "🔍 Controlla Aggiornamenti",
+            "btn.checkUpdatesShort": "🔍 Controlla",
+            "btn.desktopShort": "💻 Desktop",
+            "btn.apkShort": "📱 APK",
             "btn.downloadDesktop": "⬇️ Scarica Desktop App",
             "btn.downloadApk": "📱 Scarica APK (Android)",
             "news.title": "📢 Novità",
@@ -305,6 +328,7 @@
             "upd.title": "Nuova Versione Disponibile!",
             "upd.textPre": "È uscita la versione ", "upd.textPost": ".",
             "upd.now": "AGGIORNA ORA", "upd.later": "Più tardi",
+            "upd.from": "La tua versione: ", "upd.dl": "Scaricamento aggiornamento...", "upd.ready": "Scaricato! Conferma l'installazione",
             "toast.created": "✅ Account creato! Ora fai login.",
             "toast.createdDb": "✅ Account creato e salvato nel database!",
             "toast.createdLocal": "✅ Account creato su questo dispositivo (database non raggiungibile)",
@@ -315,7 +339,9 @@
             "toast.updError": "❌ Errore controllo aggiornamenti",
             "toast.error": "❌ Errore: ",
             "toast.noJsPdf": "libreria PDF non caricata (connessione?)",
+            "toast.imgNotReady": "immagine non caricata: riprova",
             "prog.prep": "Preparazione...", "prog.pdf": "Generazione PDF...",
+            "prog.save": "Salvataggio...",
             "prog.icon": "Creazione ICO...", "prog.render": "Rendering immagine...",
             "prog.done": "Fatto!", "prog.decode": "Decodifica...",
             "prog.encoding": "Codifica ", "prog.noRecorder": "non supportato dal browser. Fallback WAV...",
@@ -333,6 +359,8 @@
             "set.choose": "📁 Scegli",
             "set.downloads": "📥 Download",
             "set.dlClear": "Svuota",
+            "set.apps": "🔄 App e aggiornamenti",
+            "set.appsDl": "⬇️ Scarica app",
             "set.dlEmpty": "Nessun file salvato ancora",
             "folder.picked": "✅ Cartella di salvataggio: ",
             "folder.cancel": "❌ Selezione annullata",
@@ -346,6 +374,9 @@
             "home.subtitle": "Every format. Images, Video, Audio. No limits.",
             "feat.img": "Images", "feat.video": "Video", "feat.audio": "Audio",
             "btn.checkUpdates": "🔍 Check for Updates",
+            "btn.checkUpdatesShort": "🔍 Check",
+            "btn.desktopShort": "💻 Desktop",
+            "btn.apkShort": "📱 APK",
             "btn.downloadDesktop": "⬇️ Download Desktop App",
             "btn.downloadApk": "📱 Download APK (Android)",
             "news.title": "📢 What's New",
@@ -368,6 +399,7 @@
             "upd.title": "New Version Available!",
             "upd.textPre": "Version ", "upd.textPost": " is out.",
             "upd.now": "UPDATE NOW", "upd.later": "Later",
+            "upd.from": "Your version: ", "upd.dl": "Downloading update...", "upd.ready": "Downloaded! Confirm the installation",
             "toast.created": "✅ Account created! Now log in.",
             "toast.createdDb": "✅ Account created and saved to the database!",
             "toast.createdLocal": "✅ Account created on this device (database unreachable)",
@@ -378,7 +410,9 @@
             "toast.updError": "❌ Error checking for updates",
             "toast.error": "❌ Error: ",
             "toast.noJsPdf": "PDF library not loaded (connection?)",
+            "toast.imgNotReady": "image not loaded: try again",
             "prog.prep": "Preparing...", "prog.pdf": "Generating PDF...",
+            "prog.save": "Saving...",
             "prog.icon": "Creating ICO...", "prog.render": "Rendering image...",
             "prog.done": "Done!", "prog.decode": "Decoding...",
             "prog.encoding": "Encoding ", "prog.noRecorder": "not supported by browser. Falling back to WAV...",
@@ -396,6 +430,8 @@
             "set.choose": "📁 Choose",
             "set.downloads": "📥 Downloads",
             "set.dlClear": "Clear",
+            "set.apps": "🔄 Apps & Updates",
+            "set.appsDl": "⬇️ Download apps",
             "set.dlEmpty": "No files saved yet",
             "folder.picked": "✅ Save folder: ",
             "folder.cancel": "❌ Selection cancelled",
@@ -441,6 +477,26 @@
     }
 
     const NEWS = [
+        { version: "5.2.4", date: "2026-09-27", items: {
+            it: [
+                "✅ Fix: conversione immagini→PDF che bloccava l'app su dispositivi più lenti",
+                "✅ Fix: il PDF ora usa il salvataggio nativo dell'app (con fallback)",
+                "⚡ Fluidezza: anteprima immagini più leggera e barra avanzamento reale",
+                "🔄 Nuovo: pulsanti Aggiornamenti, Desktop e APK spostati in Impostazioni",
+                "🚀 Nuovo: avviso aggiornamento dopo 5 secondi con installazione diretta dell'APK",
+                "🔔 Nuovo: notifica push di sistema per gli aggiornamenti",
+                "🔢 La versione (5.2.4) appare nelle Impostazioni del telefono"
+            ],
+            en: [
+                "✅ Fix: image→PDF conversion that froze the app on older devices",
+                "✅ Fix: PDF now uses the app's native save (with fallback)",
+                "⚡ Smoother: lighter image preview and real progress bar",
+                "🔄 New: Updates, Desktop and APK buttons moved to Settings",
+                "🚀 New: update notice after 5 seconds with direct APK installation",
+                "🔔 New: system push notifications for updates",
+                "🔢 The version (5.2.4) shows up in the phone Settings"
+            ]
+        }},
         { version: "5.2.3", date: "2026-09-26", items: {
             it: [
                 "📁 Nuovo: Scegli la cartella in cui salvare i file convertiti (sito su Chrome/Edge + app Android con selettore nativo)",
@@ -675,16 +731,34 @@
 
     // --- AGGIORNAMENTI ---
     let latestVersionData = null;
+    async function appVersion() {
+        try {
+            if (inApp() && window.AppDownloads && typeof AppDownloads.getVersion === 'function') {
+                return await new Promise(res => AppDownloads.getVersion({}, v => res(String(v || '')), () => res('')));
+            }
+        } catch (e) { }
+        return '';
+    }
     async function checkForUpdates(manual = false) {
         try {
             const response = await fetch(VERSION_URL + '?t=' + new Date().getTime());
             const data = await response.json();
             latestVersionData = data;
-            if (data.version !== CURRENT_VERSION) {
-                document.getElementById('new-version-num').textContent = data.version;
+            const apkVer = data.apk_version || data.version;
+            const appVer = await appVersion();
+            let show = false;
+            if (inApp()) {
+                show = appVer ? (appVer !== apkVer) : (localStorage.getItem('apkSeen') !== apkVer);
+            } else {
+                show = (data.version !== CURRENT_VERSION);
+            }
+            if (show) {
+                document.getElementById('new-version-num').textContent = apkVer;
+                document.getElementById('upd-current-ver').textContent = appVer || data.apk_from || '5.2.3';
+                resetUpdateUi();
                 document.getElementById('update-popup').style.display = 'flex';
-            } else { 
-                if (manual) showToast(t('toast.upToDate') + CURRENT_VERSION + ')'); 
+            } else if (manual) {
+                showToast(t('toast.upToDate') + (appVer || CURRENT_VERSION) + ')');
             }
         } catch (e) { if (manual) showToast(t('toast.updError')); }
     }
@@ -695,24 +769,71 @@
         document.body.appendChild(t);
         setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 4000);
     }
-    function downloadUpdate() {
-        if (!latestVersionData || !latestVersionData.download_url) return;
-        localStorage.setItem('lastSeenVersion', latestVersionData.version);
-        document.getElementById('update-popup').style.display = 'none';
-        const url = latestVersionData.download_url;
-        try {
-            const target = new URL(url, window.location.href);
-            if (target.href === window.location.href || !url.trim()) {
-                window.location.reload(true);
-            } else {
-                window.location.href = url;
-            }
-        } catch {
-            window.location.href = url;
+    function resetUpdateUi() {
+        document.getElementById('upd-progress-wrap').style.display = 'none';
+        document.getElementById('upd-progress-bar').style.width = '0%';
+        document.getElementById('upd-progress-text').textContent = '';
+        const b = document.getElementById('upd-now-btn');
+        b.style.display = '';
+        b.textContent = t('upd.now');
+    }
+    function updProgress(pct, text) {
+        document.getElementById('upd-progress-wrap').style.display = 'block';
+        if (pct != null) document.getElementById('upd-progress-bar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+        if (text != null) document.getElementById('upd-progress-text').textContent = text;
+    }
+    function closeUpdate(markSeen) {
+        if (markSeen && latestVersionData) {
+            const apkVer = latestVersionData.apk_version || latestVersionData.version;
+            try { localStorage.setItem('apkSeen', apkVer); localStorage.setItem('lastSeenVersion', latestVersionData.version); } catch (e) { }
         }
+        document.getElementById('update-popup').style.display = 'none';
+        resetUpdateUi();
+    }
+    function laterUpdate() { closeUpdate(true); }
+    function downloadUpdate() {
+        if (!latestVersionData) return;
+        const inAppNow = inApp();
+        if (!inAppNow) {
+            closeUpdate(false);
+            const url = latestVersionData.download_url || APK_URL;
+            try {
+                const target = new URL(url, window.location.href);
+                if (target.href === window.location.href || !url.trim()) window.location.reload(true);
+                else window.location.href = url;
+            } catch { window.location.href = url; }
+            return;
+        }
+        const url = latestVersionData.apk_url || APK_URL;
+        document.getElementById('upd-now-btn').style.display = 'none';
+        updProgress(5, t('upd.dl'));
+        if (window.AppDownloads && typeof AppDownloads.installUpdate === 'function') {
+            (async () => {
+                try {
+                    await new Promise((resolve, reject) => {
+                        const to = setTimeout(() => reject(new Error('timeout')), 600000);
+                        AppDownloads.installUpdate({ url: url }, res => {
+                            try {
+                                const d = JSON.parse(res);
+                                if (d.phase === 'progress') updProgress(d.percent, t('upd.dl') + ' ' + d.percent + '%');
+                                else if (d.phase === 'install') { clearTimeout(to); resolve(d); }
+                            } catch (e) { }
+                        }, err => { clearTimeout(to); reject(new Error(err || 'err')); });
+                    });
+                    closeUpdate(true);
+                    showToast(t('upd.ready'));
+                } catch (e) {
+                    closeUpdate(true);
+                    window.open(url, '_system');
+                }
+            })();
+            return;
+        }
+        closeUpdate(true);
+        window.open(url, '_system');
     }
     setInterval(() => checkForUpdates(false), 300000);
-    setTimeout(() => checkForUpdates(false), 3000);
+    setTimeout(() => checkForUpdates(false), 5000);
 
     // --- UTILS & CONVERTERS ---
     // --- CARTELLA DI SALVATAGGIO ---
@@ -934,14 +1055,21 @@
     // Restituisce true se il file è stato salvato nella cartella scelta (o nel selettore nativo)
     async function saveBlob(blob, name) {
         if (inApp()) {
+            let data = null;
+            try { data = await blobToBase64(blob); } catch (e) { console.warn('b64 failed', e); showToast(t('folder.saveError')); return false; }
             try {
-                const data = await blobToBase64(blob);
                 if (saveFolderUri) await cordova.plugins.safMediastore.writeFile({ data: data, filename: name, folder: saveFolderUri });
                 else await cordova.plugins.safMediastore.saveFile({ data: data, filename: name });
                 return true;
             } catch (e) {
                 if (/cancel/i.test(String((e && e.message) || e))) return true;
                 console.warn('SAF save failed', e);
+                if (window.AppDownloads && typeof AppDownloads.save === 'function') {
+                    try {
+                        await new Promise((res, rej) => AppDownloads.save({ data: data, filename: name, folder: saveFolderUri || null }, res, rej));
+                        return true;
+                    } catch (e2) { console.warn('AppDownloads save failed', e2); }
+                }
                 showToast(t('folder.saveError'));
                 return false;
             }
@@ -1002,33 +1130,75 @@
 
     // IMG
     const dzImg=document.getElementById('dz-img'), fImg=document.getElementById('fileInput-img'), pImg=document.getElementById('previewImg'), oImg=document.getElementById('optionsPanel-img');
-    let imgF=null, oW=0, oH=0;
+    let imgF=null, oW=0, oH=0, imgObjUrl=null, imgBytes=null;
+    const tick=(ms=0)=>new Promise(r=>setTimeout(r,ms||0));
+    function sniffImageFmt(u8){ if(!u8||u8.length<4) return null; if(u8[0]===0xFF&&u8[1]===0xD8&&u8[2]===0xFF) return 'JPEG'; if(u8[0]===0x89&&u8[1]===0x50&&u8[2]===0x4E&&u8[3]===0x47) return 'PNG'; return null; }
+    function readBytes(file){ if(file.arrayBuffer) return file.arrayBuffer().then(b=>new Uint8Array(b)); return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(new Uint8Array(r.result)); r.onerror=()=>rej(r.error); r.readAsArrayBuffer(file); }); }
     document.getElementById('qualityRange').oninput=e=>document.getElementById('qualityValue').textContent=e.target.value;
     dzImg.onclick=()=>{if(!imgF)fImg.click()};
-    fImg.onchange=e=>{if(e.target.files[0]){imgF=e.target.files[0];const r=new FileReader();r.onload=ev=>{pImg.src=ev.target.result;pImg.style.display='block';document.getElementById('dzIcon-img').style.display='none';document.getElementById('dzTitle-img').textContent=imgF.name;document.getElementById('dzTitle-img').setAttribute('data-custom','');oImg.style.opacity=1;oImg.style.pointerEvents='auto';document.getElementById('resetBtn-img').disabled=false;document.getElementById('convertBtn-img').disabled=false;pImg.onload=()=>{oW=pImg.naturalWidth;oH=pImg.naturalHeight}};r.readAsDataURL(imgF)}};
-    document.getElementById('resetBtn-img').onclick=()=>{imgF=null;fImg.value='';pImg.style.display='none';document.getElementById('dzIcon-img').style.display='block';document.getElementById('dzTitle-img').textContent=t('img.select');document.getElementById('dzTitle-img').removeAttribute('data-custom');oImg.style.opacity=0.5;oImg.style.pointerEvents='none';document.getElementById('resetBtn-img').disabled=true;document.getElementById('convertBtn-img').disabled=true;document.getElementById('progress-container-img').style.display='none'};
+    fImg.onchange=e=>{ if(!e.target.files[0])return; imgF=e.target.files[0]; imgBytes=null;
+        if(imgObjUrl){URL.revokeObjectURL(imgObjUrl); imgObjUrl=null;}
+        imgObjUrl=URL.createObjectURL(imgF);
+        pImg.onload=()=>{oW=pImg.naturalWidth;oH=pImg.naturalHeight};
+        pImg.src=imgObjUrl;
+        pImg.style.display='block';document.getElementById('dzIcon-img').style.display='none';
+        document.getElementById('dzTitle-img').textContent=imgF.name;
+        document.getElementById('dzTitle-img').setAttribute('data-custom','');
+        oImg.style.opacity=1;oImg.style.pointerEvents='auto';
+        document.getElementById('resetBtn-img').disabled=false;
+        document.getElementById('convertBtn-img').disabled=false;
+    };
+    document.getElementById('resetBtn-img').onclick=()=>{imgF=null;imgBytes=null;fImg.value='';if(imgObjUrl){URL.revokeObjectURL(imgObjUrl);imgObjUrl=null;}pImg.style.display='none';document.getElementById('dzIcon-img').style.display='block';document.getElementById('dzTitle-img').textContent=t('img.select');document.getElementById('dzTitle-img').removeAttribute('data-custom');oImg.style.opacity=0.5;oImg.style.pointerEvents='none';document.getElementById('resetBtn-img').disabled=true;document.getElementById('convertBtn-img').disabled=true;document.getElementById('progress-container-img').style.display='none'};
     document.getElementById('convertBtn-img').onclick=async()=>{
         const fmt=document.getElementById('formatSelect-img').value, q=document.getElementById('qualityRange').value/100;
-        let w=document.getElementById('widthInput').value||oW, h=document.getElementById('heightInput').value||oH;
         const btn=document.getElementById('convertBtn-img'), pC=document.getElementById('progress-container-img'), pB=document.getElementById('progress-bar-img'), pT=document.getElementById('progress-text-img');
         btn.disabled=true; btn.textContent='...'; btn.setAttribute('data-custom',''); pC.style.display='block'; pB.style.width='10%'; pT.textContent=t('prog.prep');
         try{
+            if(!imgF || !pImg.complete || !pImg.naturalWidth) throw new Error(t('toast.imgNotReady'));
+            const CAP=3000;
+            let pw=Math.max(1,Math.round(Number(document.getElementById('widthInput').value)||oW||1));
+            let ph=Math.max(1,Math.round(Number(document.getElementById('heightInput').value)||oH||1));
+            const ls=Math.max(pw,ph); if(ls>CAP){const k=CAP/ls; pw=Math.max(1,Math.round(pw*k)); ph=Math.max(1,Math.round(ph*k));}
+            await tick();
             if(fmt==='pdf'){
-                pB.style.width='50%'; pT.textContent=t('prog.pdf');
+                pB.style.width='35%'; pT.textContent=t('prog.pdf'); await tick(30);
                 const J=window.jspdf&&window.jspdf.jsPDF; if(!J) throw new Error(t('toast.noJsPdf'));
-                const pw=Math.max(1,Math.round(Number(w)||oW||1)), ph=Math.max(1,Math.round(Number(h)||oH||1));
+                let src=null, imgFmt=null;
+                if(!imgBytes){ try{ imgBytes=await readBytes(imgF); }catch(e){ imgBytes=null; } }
+                if(imgBytes && Math.max(pImg.naturalWidth,pImg.naturalHeight)<=CAP){ imgFmt=sniffImageFmt(imgBytes); if(imgFmt) src=imgBytes; }
+                if(!src){
+                    const k=Math.min(1, CAP/Math.max(1,pImg.naturalWidth,pImg.naturalHeight));
+                    const c=document.createElement('canvas');
+                    c.width=Math.max(1,Math.round(pImg.naturalWidth*k));
+                    c.height=Math.max(1,Math.round(pImg.naturalHeight*k));
+                    c.getContext('2d').drawImage(pImg,0,0,c.width,c.height);
+                    src=c.toDataURL('image/jpeg',0.92);
+                    c.width=0;c.height=0;
+                }
+                pB.style.width='70%'; pT.textContent=t('prog.render'); await tick(30);
                 const p=new J({orientation:pw>ph?'l':'p',unit:'px',format:[pw,ph]});
-                p.addImage(pImg.src,'JPEG',0,0,pw,ph);
+                p.addImage(src, imgFmt||'JPEG', 0,0, pw, ph);
+                pB.style.width='90%'; pT.textContent=t('prog.save'); await tick(30);
                 await downloadBlob(p.output('blob'),'out.pdf');
             } else if(fmt==='ico'){
-                pB.style.width='50%'; pT.textContent=t('prog.icon');
-                const c=document.createElement('canvas');c.width=32;c.height=32;c.getContext('2d').drawImage(pImg,0,0,32,32);const blob=await canvasToIcoBlob(c);downloadBlob(blob,'icon.ico');
+                pB.style.width='50%'; pT.textContent=t('prog.icon'); await tick(30);
+                const c=document.createElement('canvas');c.width=32;c.height=32;c.getContext('2d').drawImage(pImg,0,0,32,32);
+                const blob=await canvasToIcoBlob(c);
+                pB.style.width='90%'; pT.textContent=t('prog.save'); await tick();
+                await downloadBlob(blob,'icon.ico');
             } else {
-                pB.style.width='50%'; pT.textContent=t('prog.render');
-                const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');if(fmt==='jpeg'){x.fillStyle='#FFF';x.fillRect(0,0,w,h)}x.drawImage(pImg,0,0,w,h);c.toBlob(b=>downloadBlob(b,'out.'+fmt),'image/'+fmt,q);
+                pB.style.width='50%'; pT.textContent=t('prog.render'); await tick(30);
+                const c=document.createElement('canvas');c.width=pw;c.height=ph;const x=c.getContext('2d');
+                if(fmt==='jpeg'){x.fillStyle='#FFF';x.fillRect(0,0,pw,ph)}
+                x.drawImage(pImg,0,0,pw,ph);
+                const blob=await new Promise(res=>c.toBlob(res,'image/'+fmt,q));
+                c.width=0;c.height=0;
+                if(!blob) throw new Error('toBlob');
+                pB.style.width='90%'; pT.textContent=t('prog.save'); await tick();
+                await downloadBlob(blob,'out.'+fmt);
             }
             pB.style.width='100%'; pT.textContent=t('prog.done');
-        }catch(e){showToast(t('toast.error') + e.message); pC.style.display='none'}
+        }catch(e){showToast(t('toast.error') + ((e && e.message) || e)); pC.style.display='none'}
         finally{btn.disabled=false; btn.removeAttribute('data-custom'); btn.textContent=t('common.convert')}
     };
 
@@ -1148,6 +1318,26 @@
     initSaveFolder();
     window.addEventListener('resize', () => { clearTimeout(window.__dlRT); window.__dlRT = setTimeout(initDownloads, 250); });
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + CURRENT_VERSION);
+
+    // FCM: sottoscrizione al tema degli aggiornamenti (solo dentro l'app Android)
+    (function () {
+        let tries = 0;
+        const iv = setInterval(() => {
+            tries++;
+            try {
+                const fm = (window.cordova && cordova.plugins && cordova.plugins.firebase
+                    && cordova.plugins.firebase.messaging) ? cordova.plugins.firebase.messaging : null;
+                if (fm && typeof fm.subscribe === 'function') {
+                    clearInterval(iv);
+                    fm.subscribe('aggiornamenti').catch(function () { });
+                    if (typeof fm.onMessage === 'function') {
+                        fm.onMessage(function () { try { checkForUpdates(); } catch (e) { } }, function () { });
+                    }
+                }
+            } catch (e) { }
+            if (tries > 60) clearInterval(iv);
+        }, 1000);
+    })();
 </script>
 </body>
 </html>

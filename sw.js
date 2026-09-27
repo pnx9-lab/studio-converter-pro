@@ -1,4 +1,4 @@
- const CACHE_NAME = 'converter-pro-cache-v5.2.3';
+const CACHE_NAME = 'converter-pro-cache-v5.2.4';
 const ASSETS = [
   '/',
   '/index.html',
@@ -29,10 +29,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request).then((response) => {
       const clone = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone)).catch(() => { });
       return response;
     }).catch(() => caches.match(event.request))
   );

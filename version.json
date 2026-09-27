@@ -1,4 +1,7 @@
 {
-  "version": "5.2.3",
+  "version": "5.2.4",
+  "apk_version": "5.2.4",
+  "apk_from": "5.2.3",
+  "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
