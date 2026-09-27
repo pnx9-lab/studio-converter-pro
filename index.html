@@ -372,7 +372,7 @@
             "prog.extract": "Estrazione audio in corso...", "toast.extractFmt": "Formato richiesto non disponibile: salvato come ",
             "prog.gifFallback": "GIF non supportata nativamente, uso WEBM...",
             "prog.fallbackWebm": "non supportato, fallback WEBM...",
-            "err.extract": "Estrazione audio fallita: ", "err.network": "Errore rete",
+            "err.extract": "Estrazione audio fallita: ", "err.loadVideo": "File video non leggibile da questo browser", "err.network": "Errore rete",
             "nav.folder": "Cartella",
             "nav.settings": "Impostazioni",
             "set.title": "⚙️ Impostazioni",
@@ -446,7 +446,7 @@
             "prog.extract": "Extracting audio...", "toast.extractFmt": "Requested format unavailable: saved as ",
             "prog.gifFallback": "GIF not supported natively, using WEBM...",
             "prog.fallbackWebm": "not supported, falling back to WEBM...",
-            "err.extract": "Audio extraction failed: ", "err.network": "Network error",
+            "err.extract": "Audio extraction failed: ", "err.loadVideo": "Video file cannot be read by this browser", "err.network": "Network error",
             "nav.folder": "Folder",
             "nav.settings": "Settings",
             "set.title": "⚙️ Settings",
@@ -1240,8 +1240,40 @@
         return false;
     }
 
-    // Estrazione audio 100% locale: registra la traccia audio del video nel browser
-    async function extractAudioLocal(vid, onPct) {
+    // Estrazione audio 100% locale: nessun file lascia il dispositivo
+    async function extractAudioLocal(file, vid, fmt, onPct) {
+        // 1) Percorso principale: decodifica l'audio del file e lo codifica nel formato scelto
+        if (file && file.size <= 300 * 1024 * 1024) {
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                const ac = new AC();
+                if (ac.state === 'suspended') { try { await ac.resume(); } catch (e) { } }
+                let audioBuf = null;
+                try { audioBuf = await ac.decodeAudioData(await file.arrayBuffer()); } catch (e2) { audioBuf = null; }
+                try { ac.close(); } catch (e3) { }
+                if (audioBuf && audioBuf.length) {
+                    if (onPct) onPct(45);
+                    let blob = null, ext = fmt;
+                    if (fmt === 'mp3') blob = new Blob(encodeMP3(audioBuf), { type: 'audio/mp3' });
+                    else if (fmt === 'wav') blob = bufferToWave(audioBuf, audioBuf.length);
+                    else {
+                        const mime = getAudioMime(fmt);
+                        if (window.MediaRecorder && MediaRecorder.isTypeSupported(mime)) {
+                            const t0 = Date.now(), dur = audioBuf.duration || 1;
+                            const timer = onPct ? setInterval(() => { try { onPct(Math.min(95, 45 + ((Date.now() - t0) / (dur * 1000)) * 50)); } catch (e4) { } }, 300) : null;
+                            try { blob = await recordAudioBuffer(audioBuf, mime); } finally { if (timer) clearInterval(timer); }
+                        } else { blob = bufferToWave(audioBuf, audioBuf.length); ext = 'wav'; }
+                    }
+                    if (blob && blob.size) { if (onPct) onPct(99); return { blob: blob, ext: ext }; }
+                }
+            } catch (e) { console.warn('Estrazione audio: decodifica non riuscita, provo la registrazione', e); }
+        }
+        // 2) Fallback: registrazione in tempo reale della traccia audio del <video>
+        const out = await recordVideoAudio(vid, onPct);
+        if (!out.blob || !out.blob.size) throw new Error('audio');
+        return out;
+    }
+    async function recordVideoAudio(vid, onPct) {
         if (!window.MediaRecorder) throw new Error('MediaRecorder');
         let stream = null;
         try {
@@ -1255,25 +1287,28 @@
         } catch (e) {
             stream = vid.captureStream ? vid.captureStream() : vid.mozCaptureStream();
         }
-        const tracks = stream.getAudioTracks();
-        if (!tracks.length) throw new Error('audio');
+        if (!stream || !stream.getAudioTracks || !stream.getAudioTracks().length) throw new Error('audio');
         const mime = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(m => MediaRecorder.isTypeSupported(m));
         if (!mime) throw new Error('MediaRecorder');
         const ext = mime.indexOf('audio/ogg') === 0 ? 'ogg' : 'webm';
         return new Promise((resolve, reject) => {
+            let finished = false, guard = null;
+            const done = (fn, val) => { if (finished) return; finished = true; if (guard) clearTimeout(guard); fn(val); };
             try {
-                const rec = new MediaRecorder(tracks, { mimeType: mime });
+                const rec = new MediaRecorder(stream, { mimeType: mime });
                 const chunks = [];
+                const stop = () => { try { if (rec.state !== 'inactive') rec.stop(); } catch (e2) { } };
                 rec.ondataavailable = ev => { if (ev.data && ev.data.size) chunks.push(ev.data); };
-                rec.onerror = ev => reject((ev.error && ev.error.message) || new Error('recorder'));
-                rec.onstop = () => resolve({ blob: new Blob(chunks, { type: mime }), ext: ext });
+                rec.onerror = ev => done(reject, (ev.error && ev.error.message) || new Error('recorder'));
+                rec.onstop = () => done(resolve, { blob: new Blob(chunks, { type: mime }), ext: ext });
                 vid.currentTime = 0;
                 if (onPct) vid.ontimeupdate = () => { try { onPct((vid.currentTime / (vid.duration || 1)) * 100); } catch (e2) { } };
-                vid.onended = () => setTimeout(() => { try { if (rec.state !== 'inactive') rec.stop(); } catch (e3) { } }, 350);
+                vid.onended = () => setTimeout(stop, 350);
+                guard = setTimeout(stop, (isFinite(vid.duration) && vid.duration > 0 ? vid.duration * 1000 : 600000) + 5000);
                 rec.start();
                 const pr = vid.play();
-                if (pr && pr.catch) pr.catch(() => { });
-            } catch (e4) { reject(e4); }
+                if (pr && pr.catch) pr.catch(() => done(reject, new Error('play')));
+            } catch (e4) { done(reject, e4); }
         });
     }
     async function downloadBlob(b, n) {
@@ -1443,7 +1478,13 @@
             try{
                 const isAudioExtract = fmt==='audio-extract';
                 const vid=document.createElement('video'); vid.src=URL.createObjectURL(cur); vid.muted=!isAudioExtract;
-                await new Promise(r=>{vid.onloadeddata=r;vid.load()});
+                const loaded = await new Promise(r => {
+                    const to = setTimeout(() => r(false), 15000);
+                    vid.onloadeddata = () => { clearTimeout(to); r(true); };
+                    vid.onerror = () => { clearTimeout(to); r(false); };
+                    vid.load();
+                });
+                if (!loaded) throw new Error(t('err.loadVideo'));
                 
                 if(isAudioExtract){
                     const audioFmt=document.getElementById('audioFormatSelect-video').value;
@@ -1452,7 +1493,7 @@
 
                     try {
                         // Estrazione audio 100% locale: nessun file lascia il dispositivo
-                        const out = await extractAudioLocal(vid, (pct) => {
+                        const out = await extractAudioLocal(cur, vid, audioFmt, (pct) => {
                             pB.style.width = Math.max(5, Math.min(99, pct)) + '%';
                         });
 
