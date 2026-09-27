@@ -1,0 +1,8 @@
+name = "studio-converter-pro"
+compatibility_date = "2026-09-27"
+pages_build_output_dir = "."
+
+# La KV namespace (binding "CREDS") va creata sul dashboard Cloudflare e aggiunta qui:
+# [[kv_namespaces]]
+# binding = "CREDS"
+# id = "<id della namespace>"

@@ -21,3 +21,7 @@ Thumbs.db
 
 # Database locale di sviluppo (Netlify Function)
 netlify/functions/.data-users.json
+
+# Cloudflare Wrangler (stato locale)
+.wrangler/
+wrangler.log

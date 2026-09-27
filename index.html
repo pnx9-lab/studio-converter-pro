@@ -576,20 +576,29 @@
         }
         return text;
     }
-    // --- DATABASE CREDENZIALI CONDIVISO (Netlify Function + Netlify Blobs) ---
+    // --- DATABASE CREDENZIALI CONDIVISO (function Netlify o Cloudflare Pages) ---
     // Ogni nuova registrazione viene salvata nel database: lo stesso account
     // funziona su PC, telefono e app. Se il database non risponde si resta su locale.
-    const CRED_FN = '/.netlify/functions/credentials';
+    const CRED_FN = ['/.netlify/functions/credentials', '/credentials'];
+    let credFnOk = null;
     async function remoteCreds(action, u, p) {
-        try {
-            const r = await fetch(CRED_FN, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: action, u: u, p: p })
-            });
-            if (!r.ok) return null;
-            return await r.json();
-        } catch (e) { return null; }
+        const tries = credFnOk ? [credFnOk] : CRED_FN;
+        for (const path of tries) {
+            try {
+                const r = await fetch(path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action, u: u, p: p })
+                });
+                if (r.status === 404) continue; // host sbagliato: proviamo l'altro
+                let j = null;
+                try { j = await r.json(); } catch (e) { continue; } // non è JSON: host sbagliato
+                if (j && j.error === 'server') { credFnOk = null; window.credFnOk = null; continue; } // function ok, database non disponibile
+                credFnOk = path; window.credFnOk = path;
+                return j;
+            } catch (e) { }
+        }
+        return null;
     }
     function localUserKey(u) {
         if (localStorage.getItem('user_' + u) !== null) return u;
