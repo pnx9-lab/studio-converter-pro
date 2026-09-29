@@ -1,9 +1,9 @@
 {
   "version": "5.2.6",
-  "apk_version": "5.2.5",
-  "apk_from": "5.2.4",
-  "build": 1,
-  "changes": "5.2.6: nuovo motore FFmpeg (FLAC, AAC, M4A, OGG, WEBM) + fix MP3 estratti senza audio",
+  "apk_version": "5.2.6",
+  "apk_from": "5.2.5",
+  "build": 2,
+  "changes": "5.2.6: nuovo motore FFmpeg (FLAC, AAC, M4A, OGG, WEBM) + fix MP3 estratti senza audio. Nuovo APK disponibile: aggiorna da Impostazioni",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
