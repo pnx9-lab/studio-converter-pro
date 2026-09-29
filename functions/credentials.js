@@ -23,7 +23,21 @@ function json(body, status) {
     status: status || 200,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store'
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+
+// Preflight per l'app Android (origine https://localhost) che sincronizza gli account
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400'
     }
   });
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.6</title>
+    <title>Studio Converter Pro Suite v5.2.7</title>
     
     <!-- FAVICON SVG (freccia di conversione su gradiente indaco→ciano) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -18,19 +18,23 @@
     <meta name="apple-mobile-web-app-title" content="Studio Pro">
     <meta name="format-detection" content="telephone=no">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
-    <!-- Cordova: dentro l'app Android viene caricato il bridge da https://localhost (in rete non viene richiesto) -->
+    <script src="vendor/jspdf.umd.min.js"></script>
+    <script src="vendor/lame.min.js"></script>
+    <!-- Cordova: dentro l'app Android viene caricato il bridge (param ?app=cordova o contenuto locale su localhost) -->
     <script>
-        if (new URLSearchParams(location.search).get('app') === 'cordova') {
-            (function () {
+        (function () {
+            var isApp = false;
+            try { isApp = new URLSearchParams(location.search).get('app') === 'cordova'; } catch (e) { }
+            if (!isApp && location.protocol === 'file:') isApp = true;
+            if (!isApp && location.hostname === 'localhost') isApp = true;
+            if (isApp) {
                 var s = document.createElement('script');
-                s.src = 'https://localhost/cordova.js';
+                s.src = location.protocol === 'file:' ? 'cordova.js' : 'https://localhost/cordova.js';
                 s.onload = function () { document.documentElement.dataset.app = 'cordova'; };
                 s.onerror = function () { };
                 document.head.appendChild(s);
-            })();
-        }
+            }
+        })();
     </script>
 </head>
 <body>
@@ -316,8 +320,11 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.2.6";
+    const CURRENT_VERSION = "5.2.7";
     const VERSION_URL = "version.json";
+    // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
+    const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
+    const SITE_ORIGIN = "https://studioconverterpro.pages.dev";
     const APK_URL = "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk";
 
     // --- I18N (Italiano / English) ---
@@ -510,6 +517,20 @@
     }
 
     const NEWS = [
+        { version: "5.2.7", date: "2026-09-29", items: {
+            it: [
+                "📱 App autonoma: tutto il convertitore è dentro l'APK, funziona anche senza internet",
+                "🔄 Aggiornamenti comodi: dal popup si scarica e installa, senza conflitti",
+                "🎵 Librerie e motore FFmpeg inclusi: niente più dipendenza da siti esterni",
+                "🔍 Controllo aggiornamenti più affidabile (fonte indipendente dal sito)"
+            ],
+            en: [
+                "📱 Autonomous app: the whole converter is inside the APK, works without internet",
+                "🔄 Easy updates: download and install straight from the popup, no conflicts",
+                "🎵 Libraries and FFmpeg engine bundled: no more dependencies on external sites",
+                "⚙️ More reliable update check (source independent from the website)"
+            ]
+        }},
         { version: "5.2.6", date: "2026-09-29", items: {
             it: [
                 "🔇 Fix: gli MP3 estratti dal video uscivano silenziosi, ora l'audio c'è davvero",
@@ -722,7 +743,7 @@
     // --- DATABASE CREDENZIALI CONDIVISO (Cloudflare Pages Function) ---
     // Ogni nuova registrazione viene salvata nel database: lo stesso account
     // funziona su PC, telefono e app. Se il database non risponde si resta su locale.
-    const CRED_FN = ['/credentials'];
+    const CRED_FN = [inApp() ? SITE_ORIGIN + '/credentials' : '/credentials'];
     let credFnOk = null;
     async function remoteCreds(action, u, p) {
         const tries = credFnOk ? [credFnOk] : CRED_FN;
@@ -894,11 +915,13 @@
         }, delay);
     }
     setTimeout(() => { scheduleUpdateCheck(inApp() ? 1500 : 5000); }, 0);
+    try { document.addEventListener('deviceready', () => { try { scheduleUpdateCheck(800); } catch (e) { } }); } catch (e) { }
     setTimeout(maybeAskNotif, 600);
 
     // Controllo "è cambiato qualcosa": il server invia la push solo se version/build sono nuovi
     setTimeout(() => {
         try {
+            if (inApp()) return; // in app il check lo fa l'utente o la push: niente chiamate al sito
             if (sessionStorage.getItem('notifyCheck')) return;
             sessionStorage.setItem('notifyCheck', '1');
             fetch('/notify', {
@@ -912,14 +935,16 @@
 
     async function checkForUpdates(manual = false) {
         try {
-            const response = await fetch(VERSION_URL + '?t=' + new Date().getTime());
+            const isApp = inApp();
+            const url = isApp ? UPDATE_URL_GH : VERSION_URL;
+            const response = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + new Date().getTime());
             const data = await response.json();
             latestVersionData = data;
             const apkVer = data.apk_version || data.version;
             const appVer = await appVersion();
             let show = false;
-            if (inApp()) {
-                show = appVer ? (appVer !== apkVer) : (localStorage.getItem('apkSeen') !== apkVer);
+            if (isApp) {
+                show = appVer ? !verGte(appVer, apkVer) : (localStorage.getItem('apkSeen') !== apkVer);
             } else {
                 show = (data.version !== CURRENT_VERSION);
             }
@@ -927,13 +952,16 @@
                 document.getElementById('new-version-num').textContent = apkVer;
                 document.getElementById('upd-current-ver').textContent = appVer || data.apk_from || '5.2.4';
                 resetUpdateUi();
-                if (inApp() && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
+                if (isApp && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
                 document.getElementById('update-popup').style.display = 'flex';
             } else {
                 showHomeUpdBtn(false);
-                if (manual) showToast(t('toast.upToDate') + (appVer || CURRENT_VERSION) + ')');
+                if (manual) {
+                    const shown = isApp ? ((appVer || '?') + ' → ' + apkVer + ' [github]') : (appVer || CURRENT_VERSION);
+                    showToast(t('toast.upToDate') + shown + ')');
+                }
             }
-        } catch (e) { if (manual) showToast(t('toast.updError')); }
+        } catch (e) { if (manual) showToast(t('toast.updError') + ' (' + ((e && e.message) || String(e)) + ')'); }
     }
     function showToast(msg) {
         const t = document.createElement('div');
@@ -1015,7 +1043,16 @@
     // Sito (PC): File System Access API -> l'utente sceglie una volta, i file finiscono lì.
     // App Android: cordova-plugin-saf-mediastore -> selettore cartelle nativo.
     let saveDirHandle = null, saveFolderUri = null;
-    function inApp() { return !!(window.cordova && cordova.plugins && cordova.plugins.safMediastore); }
+    function inApp() {
+        try { if (new URLSearchParams(location.search).get('app') === 'cordova') return true; } catch (e) { }
+        if (document.documentElement.dataset.app === 'cordova') return true;
+        if (window.cordova && cordova.plugins && cordova.plugins.safMediastore) return true;
+        try {
+            if (location.protocol === 'file:') return true;
+            if (location.hostname === 'localhost') return true;
+        } catch (e) { }
+        return false;
+    }
     function hasDirPicker() { return typeof window.showDirectoryPicker === 'function'; }
     function idbOpen() { return new Promise((res, rej) => { const r = indexedDB.open('scp-save', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
     async function idbSet(k, v) { const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
@@ -1326,6 +1363,7 @@
             const { createFFmpeg } = window.FFmpeg;
             const ff = createFFmpeg({
                 corePath: location.origin + FFMPEG_BASE + 'ffmpeg-core.js',
+                mainName: 'main', // core single-thread (funziona anche senza SharedArrayBuffer)
                 log: false,
                 logger: (e) => { if (e && e.message) { _ffLog.push(String(e.message)); if (_ffLog.length > 3000) _ffLog.shift(); } },
                 progress: (p) => { if (onPct && p && typeof p.ratio === 'number' && isFinite(p.ratio)) onPct(40 + Math.max(0, Math.min(1, p.ratio)) * 58); }
@@ -1359,7 +1397,6 @@
     async function extractWithFFmpeg(file, fmt, onPct, onMsg) {
         if (!file) throw new Error('file');
         if (file.size > 200 * 1024 * 1024) throw new Error('file troppo grande per ffmpeg.wasm');
-        if (typeof SharedArrayBuffer === 'undefined') throw new Error('SharedArrayBuffer non disponibile (header COOP/COEP)');
         const ff = await getFFmpeg(onPct);
         await probeEncoders(ff);
         if (onMsg) onMsg(t('prog.ffmpegRun'));
@@ -1663,7 +1700,7 @@
     applyLang();
     initSaveFolder();
     window.addEventListener('resize', () => { clearTimeout(window.__dlRT); window.__dlRT = setTimeout(initDownloads, 250); });
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + CURRENT_VERSION);
+    if (!inApp() && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + CURRENT_VERSION);
 
     // FCM: sottoscrizione al tema degli aggiornamenti (solo dentro l'app Android)
     (function () {

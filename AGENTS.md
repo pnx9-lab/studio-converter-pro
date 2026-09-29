@@ -53,11 +53,27 @@ Stato attuale della notifica in KV (`notify_state`): deve coincidere con
   credenziali Firebase. Il secret notifiche è nei secret di Cloudflare Pages.
 - Versione APK (`config.xml`): `versionCode = major*10000 + minor*100 + patch`
   (es. 5.2.5 → 50205). Deve salire a ogni rilascio APK.
+- Rilascio APK: `cordova build android --release` in `C:\My project\studiopro`,
+  poi caricare l'APK sul release GitHub tag `apk` **PRIMA** di fare push del
+  sito con una nuova `apk_version` (altrimenti il link di aggiornamento è rotto).
 - Keystore: `F:\app Codici\keystore-android\studio-converter-pro.p12` (alias `android`).
-- Dopo ogni modifica a `index.html`/`style.css` copiarli anche in
-  `C:\My project\studiopro\www\` (contenuto dell'app Cordova).
+- Sincronizzazione `C:\My project\studiopro\www\` dopo ogni modifica al sito:
+  `index.html`, `style.css`, `favicon.svg`, `icon-192.png`, `icon-512.png`,
+  `manifest.json`, `privacy*.html` **e tutta la cartella `vendor/`**.
+  Non copiare `sw.js`/`version.json` (solo sito).
+- App **autonoma dal sito** (dal 5.2.7): `config.xml` ha
+  `content src="index.html?app=cordova"` (contenuto locale incluso nell'APK).
+  Controllo aggiornamenti in app: `https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json`
+  (vedi `UPDATE_URL_GH` in index.html); non usare l'URL del sito.
+- ffmpeg.wasm usa il core **single-thread** (`vendor/ffmpeg-core.js/.wasm`,
+  niente SharedArrayBuffer → nessun header COOP/COEP). `vendor/ffmpeg.min.js`
+  è patchato a mano: `noExitRuntime:!0` nel config del core (senza, ogni secondo
+  `ff.run()` muore con "Program terminated with exit(0)"). Se si riescarica il
+  loader da npm, **riapplicare il patch** (stringa `r({mainScriptUrlOrBlob:n,`).
 - Test end-to-end del sito: script in `%TEMP%\opencode\`
   (`mkexttest.js`, `testsrv.js`, `rune2e.ps1`, `syntaxcheck.js`);
   Chrome headless con `--no-proxy-server` (altrimenti dà ERR_CONNECTION_REFUSED).
+  `rune2e.ps1 -Upd` simula il popup di aggiornamento in app (`?app=cordova`,
+  versione stub 5.2.4), `-Fmt flac|m4a|ogg|aac|webm -Src <file>` testa ffmpeg.
 - Netlify è stato rimosso del tutto: hosting solo Cloudflare Pages
   (progetto `studioconverterpro`, KV `CREDS` id `eb2a5f8b03cf47a58464e4b7b040ac81`).
