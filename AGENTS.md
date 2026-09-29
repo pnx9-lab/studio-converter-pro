@@ -2,6 +2,19 @@
 
 Regole per chi lavora su questo progetto (assistente incluso).
 
+## WORKFLOW DI LAVORO (dal 2026-09-29)
+
+**Sviluppo locale, pubblicazione solo a lavoro finito.**
+
+1. Le modifiche per la nuova versione si fanno **in locale**: si modifica,
+   si testa (script in `%TEMP%\opencode\`, screenshot, e2e), si corregge.
+2. **NIENTE `git commit`, `git push` o deploy durante lo sviluppo**: se un
+   test fallisce si corregge e si ritesta, sempre restando in locale.
+3. Si pubblica **solo quando tutto è verificato e perfetto**:
+   commit → push → deploy → bump `build` → trigger notifica (checklist sotto).
+4. Il sito live resta com'è finché non si pubblica: gli utenti vedono la
+   versione precedente fino ad allora.
+
 ## REGOLA NOTIFICHE (obbligatoria)
 
 **Ogni modifica visibile all'utente (sito o app) deve essere notificata con una push.**

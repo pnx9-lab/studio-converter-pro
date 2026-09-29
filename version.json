@@ -1,9 +1,9 @@
 {
-  "version": "5.2.5",
+  "version": "5.2.6",
   "apk_version": "5.2.5",
   "apk_from": "5.2.4",
   "build": 1,
-  "changes": "Fix: estrazione audio da video (MP3/WAV/OGG) ora funziona davvero, al 100% locale sul dispositivo",
+  "changes": "5.2.6: nuovo motore FFmpeg (FLAC, AAC, M4A, OGG, WEBM) + fix MP3 estratti senza audio",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }

@@ -3,7 +3,7 @@ chcp 65001 >nul
 title Studio Converter Pro - Server Locale
 echo.
 echo ========================================
-echo   Studio Converter Pro v5.2.5
+echo   Studio Converter Pro v5.2.6
 echo   Avvio server locale...
 echo ========================================
 echo.
