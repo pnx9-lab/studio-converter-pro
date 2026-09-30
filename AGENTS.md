@@ -10,9 +10,15 @@ Regole per chi lavora su questo progetto (assistente incluso).
    si testa (script in `%TEMP%\opencode\`, screenshot, e2e), si corregge.
 2. **NIENTE `git commit`, `git push` o deploy durante lo sviluppo**: se un
    test fallisce si corregge e si ritesta, sempre restando in locale.
-3. Si pubblica **solo quando tutto è verificato e perfetto**:
-   commit → push → deploy → bump `build` → trigger notifica (checklist sotto).
-4. Il sito live resta com'è finché non si pubblica: gli utenti vedono la
+3. **PRIMA del commit e del push va fatta verificare la cosa all'utente**:
+   - far girare il tester (e2e/syntaxcheck/pixel) e mostrare i risultati;
+   - presentare all'utente cosa è stato fatto e farlo verificare;
+   - **aspettare la conferma esplicita dell'utente** ("va bene", "vai",
+     "ok") PRIMA di `git commit` / `git push`.
+   Niente commit/push "di sorpresa", anche se tutti i test sono verdi.
+4. Solo dopo la conferma: commit → push → deploy → bump `build` →
+   trigger notifica (checklist sotto).
+5. Il sito live resta com'è finché non si pubblica: gli utenti vedono la
    versione precedente fino ad allora.
 
 ## REGOLA NOTIFICHE (obbligatoria)
