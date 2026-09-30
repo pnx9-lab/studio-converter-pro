@@ -35,8 +35,28 @@ Checklist da eseguire SEMPRE, nell'ordine:
    `"sent":false` significa che `build` non è cambiato → tornare al punto 1.
 6. Controllo: una seconda chiamata deve dare `"sent":false` (antiduplicati OK).
 
+**Il rilascio NON è completo finché il punto 5 non risponde `sent:true`.**
+Non passare ad altro (né riepilogo all'utente, né "lavoro finito") prima
+di aver eseguito tutti i punti 1-6: deploy e notifica sono obbligatori
+anche per un piccolo fix.
+
 Stato attuale della notifica in KV (`notify_state`): deve coincidere con
 `version#build` di `version.json`.
+
+## REGOLA POPUP (solo app, mai sito)
+
+I popup `update-popup`, `notif-popup` e `whatsnew-popup` devono apparire
+**solo nell'APK** (`inApp()` = `true`), **MAI sul sito web**:
+
+- `checkForUpdates()`: nel ramo sito (`!isApp`) `show` deve restare
+  `false` — nessun "Nuova versione disponibile" nel browser (il sito si
+  aggiorna da solo via service worker).
+- Sul sito, check manuale diverso → solo toast `toast.updNewSite`
+  ("C'è un aggiornamento del sito"), mai il popup.
+- Test di regressione obbligatorio prima di rilasciare un fix del genere:
+  copia del sito + `version.json` finto diverso (es. 5.2.9) serviti con
+  `testsrv.js`, poi Chrome `--dump-dom --virtual-time-budget=14000` →
+  i tre `id="*-popup"` devono restare `style="display:none; ..."`.
 
 ## LIMITI DELLE NOTIFICHE
 
@@ -75,5 +95,20 @@ Stato attuale della notifica in KV (`notify_state`): deve coincidere con
   Chrome headless con `--no-proxy-server` (altrimenti dà ERR_CONNECTION_REFUSED).
   `rune2e.ps1 -Upd` simula il popup di aggiornamento in app (`?app=cordova`,
   versione stub 5.2.4), `-Fmt flac|m4a|ogg|aac|webm -Src <file>` testa ffmpeg.
+- **Screenshot store**: uno per volta con `shotone.ps1 -Name <n> -Qs <qs> -Port <p>`
+  dopo `Stop-Process chrome,node` + cancellazione `shot-*.png`. Usare **sempre**
+  l'early-exit `&shot=settings` (Impostazioni) oppure `&shot=home` (home):
+  senza `shot=` parte il branch ui completo che cicla i temi e lo screenshot
+  cattura uno stato transitorio. Lingua con `&lang=it`.
+- **Il tool di lettura immagini a volte serve un'immagine CACHEATA diversa
+  dal file richiesto** (falsi positivi/negativi): NON guardare il PNG per
+  verificarlo. Verifica oggettiva con `chkshot.ps1` (pixel .NET: sfondo nero/
+  chiaro/viola = tema) + dimensione file (famiglie: settings-default ~183k,
+  settings-light ~137k, settings-dark ~75k, home-default ~214k, home-light
+  ~162k, home-dark ~108k) + `postLang/postTab/postTheme` nel log
+  `srv-<nome>.log` della run.
+- `curl` sul sito: `studioconverterpro.pages.dev/index.html` risponde
+  **308 redirect** → usare SEMPRE `curl -sL`, altrimenti il corpo è vuoto
+  e i `Contains()` danno tutti `False` (falsi allarmi "non aggiornato").
 - Netlify è stato rimosso del tutto: hosting solo Cloudflare Pages
   (progetto `studioconverterpro`, KV `CREDS` id `eb2a5f8b03cf47a58464e4b7b040ac81`).
