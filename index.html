@@ -402,6 +402,7 @@
             "toast.badLogin": "❌ Utente o password errati",
             "toast.upToDate": "✅ Sei già all'ultima versione (",
             "toast.updError": "❌ Errore controllo aggiornamenti",
+            "toast.updNewSite": "🔄 C'è un aggiornamento del sito (",
             "toast.error": "❌ Errore: ",
             "toast.noJsPdf": "libreria PDF non caricata (connessione?)",
             "toast.imgNotReady": "immagine non caricata: riprova",
@@ -482,6 +483,7 @@
             "toast.badLogin": "❌ Wrong username or password",
             "toast.upToDate": "✅ You already have the latest version (",
             "toast.updError": "❌ Error checking for updates",
+            "toast.updNewSite": "🔄 Site update available (",
             "toast.error": "❌ Error: ",
             "toast.noJsPdf": "PDF library not loaded (connection?)",
             "toast.imgNotReady": "image not loaded: try again",
@@ -1048,7 +1050,7 @@
             if (isApp) {
                 show = appVer ? !verGte(appVer, apkVer) : (localStorage.getItem('apkSeen') !== apkVer);
             } else {
-                show = (data.version !== CURRENT_VERSION);
+                show = false;
             }
             if (show) {
                 document.getElementById('new-version-num').textContent = apkVer;
@@ -1059,8 +1061,12 @@
             } else {
                 showHomeUpdBtn(false);
                 if (manual) {
-                    const shown = isApp ? ((appVer || '?') + ' → ' + apkVer + ' [github]') : (appVer || CURRENT_VERSION);
-                    showToast(t('toast.upToDate') + shown + ')');
+                    if (!isApp && data.version !== CURRENT_VERSION) {
+                        showToast(t('toast.updNewSite') + data.version + ')');
+                    } else {
+                        const shown = isApp ? ((appVer || '?') + ' → ' + apkVer + ' [github]') : (appVer || CURRENT_VERSION);
+                        showToast(t('toast.upToDate') + shown + ')');
+                    }
                 }
             }
         } catch (e) { if (manual) showToast(t('toast.updError') + ' (' + ((e && e.message) || String(e)) + ')'); }

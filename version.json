@@ -2,8 +2,8 @@
   "version": "5.2.8",
   "apk_version": "5.2.8",
   "apk_from": "5.2.7",
-  "build": 1,
-  "changes": "5.2.8: novità in evidenza dopo ogni aggiornamento + tema chiaro/nero a scelta nelle Impostazioni",
+  "build": 2,
+  "changes": "5.2.8: novità in evidenza dopo ogni aggiornamento + tema chiaro/nero a scelta nelle Impostazioni - niente popup aggiornamento sul sito web, solo in app",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
