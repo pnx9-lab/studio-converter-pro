@@ -3,13 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.7</title>
+    <title>Studio Converter Pro Suite v5.2.8</title>
     
     <!-- FAVICON SVG (freccia di conversione su gradiente indaco→ciano) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <link rel="stylesheet" href="style.css">
+    <!-- Tema (chiaro/nero/predefinito): applicato subito, prima del primo disegno -->
+    <script>
+        (function () {
+            var th = null;
+            try { th = new URLSearchParams(location.search).get('theme'); } catch (e) { }
+            if (th !== 'light' && th !== 'dark') {
+                try { th = localStorage.getItem('theme'); } catch (e) { th = null; }
+            }
+            if (th === 'light' || th === 'dark') document.documentElement.setAttribute('data-theme', th);
+        })();
+    </script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
     <meta name="mobile-web-app-capable" content="yes">
@@ -68,7 +79,7 @@
             </div>
             <div class="support-banner">
                 <div class="support-text"><span class="support-icon">&#9749;</span><span data-i18n="home.support">Ti è utile? Offrimi un caffè ☕</span></div>
-                <a class="support-btn" href="https://studio.buymeacoffee.com" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
+                <a class="support-btn" href="https://buymeacoffee.com/studioconverterpro" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
             </div>
             <p style="margin-top: 20px; font-size: 12px;"><a href="privacy.html" id="privacyLink" style="color: var(--text-muted); text-decoration: underline;">🔒 Privacy Policy</a></p>
         </div>
@@ -103,7 +114,7 @@
                 <div style="text-align:right; font-size:12px; color:var(--text-muted)"><span data-i18n="common.value">Valore:</span> <span id="qualityValue">90</span>%</div>
             </div>
             <div id="progress-container-img" style="display:none; margin:15px 0;">
-                <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                <div style="background:var(--range-bg); height:8px; border-radius:4px; overflow:hidden;">
                     <div id="progress-bar-img" style="background:#6366f1; height:100%; width:0%; transition:0.3s;"></div>
                 </div>
                 <div id="progress-text-img" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
@@ -151,7 +162,7 @@
                 </div>
             </div>
             <div id="progress-container-video" style="display:none; margin-top:20px;">
-                <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                <div style="background:var(--range-bg); height:8px; border-radius:4px; overflow:hidden;">
                     <div id="progress-bar-video" style="background:#6366f1; height:100%; width:0%; transition:0.3s;"></div>
                 </div>
                 <div id="progress-text-video" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
@@ -186,7 +197,7 @@
                 </select>
             </div>
             <div id="progress-container-audio" style="display:none; margin-top:20px;">
-                <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                <div style="background:var(--range-bg); height:8px; border-radius:4px; overflow:hidden;">
                     <div id="progress-bar-audio" style="background:#ec4899; height:100%; width:0%; transition:0.3s;"></div>
                 </div>
                 <div id="progress-text-audio" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
@@ -249,6 +260,15 @@
                 </div>
             </div>
 
+            <div class="setting-row">
+                <span class="setting-label" data-i18n="set.theme">🎨 Tema</span>
+                <div class="lang-switch" id="themeSwitch">
+                    <button type="button" data-theme-btn="light" onclick="setTheme('light')" data-i18n="set.themeLight">⬜ Bianco</button>
+                    <button type="button" data-theme-btn="dark" onclick="setTheme('dark')" data-i18n="set.themeDark">⬛ Nero</button>
+                    <button type="button" data-theme-btn="default" onclick="setTheme('default')" data-i18n="set.themeDefault">🟣 Predefinito</button>
+                </div>
+            </div>
+
             <div class="setting-row" id="folderRow" style="display:none;">
                 <span class="setting-label" data-i18n="set.folder">Cartella di salvataggio</span>
                 <div class="setting-actions">
@@ -289,7 +309,7 @@
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;"><span data-i18n="upd.textPre">È uscita la versione </span><span id="new-version-num"></span><span data-i18n="upd.textPost">.</span></p>
             <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 18px;"><span data-i18n="upd.from">La tua versione: </span><span id="upd-current-ver"></span></p>
             <div id="upd-progress-wrap" style="display:none; margin-bottom: 16px;">
-                <div style="height:8px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden;">
+                <div style="height:8px; border-radius:6px; background:var(--range-bg); overflow:hidden;">
                     <div id="upd-progress-bar" style="height:100%; width:0%; background:#22c55e; transition:width .25s;"></div>
                 </div>
                 <div id="upd-progress-text" style="font-size:12px; color:var(--text-muted); margin-top:6px;"></div>
@@ -319,8 +339,18 @@
         </div>
     </div>
 
+    <!-- NOVITÀ DOPO L'AGGIORNAMENTO (solo app: al primo avvio della nuova versione) -->
+    <div id="whatsnew-popup" class="modal-overlay" style="display:none; z-index: 2300;">
+        <div class="modal-card" style="border-color: #6366f1;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
+            <h3 style="margin: 0 0 10px 0;" id="whatsnew-title">Novità</h3>
+            <div id="whatsnew-body" style="max-height: 55vh; overflow-y: auto; text-align: left; padding-right: 4px;"></div>
+            <button type="button" onclick="closeWhatsNew()" class="btn-convert" style="width: 100%; margin-top: 12px;" data-i18n="news.close">✖ Chiudi</button>
+        </div>
+    </div>
+
 <script>
-    const CURRENT_VERSION = "5.2.7";
+    const CURRENT_VERSION = "5.2.8";
     const VERSION_URL = "version.json";
     // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
     const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
@@ -389,6 +419,11 @@
             "nav.settings": "Impostazioni",
             "set.title": "⚙️ Impostazioni",
             "set.lang": "Lingua",
+            "set.theme": "🎨 Tema",
+            "set.themeLight": "⬜ Bianco",
+            "set.themeDark": "⬛ Nero",
+            "set.themeDefault": "🟣 Predefinito",
+            "whatsnew.title": "Novità della versione",
             "set.folder": "Cartella di salvataggio",
             "set.folderNone": "Download (default)",
             "set.folderLost": "⚠️ Cartella non valida più, scegli di nuovo",
@@ -464,6 +499,11 @@
             "nav.settings": "Settings",
             "set.title": "⚙️ Settings",
             "set.lang": "Language",
+            "set.theme": "🎨 Theme",
+            "set.themeLight": "⬜ White",
+            "set.themeDark": "⬛ Black",
+            "set.themeDefault": "🟣 Default",
+            "whatsnew.title": "What's new in version",
             "set.folder": "Save folder",
             "set.folderNone": "Downloads (default)",
             "set.folderLost": "⚠️ Folder no longer valid, choose it again",
@@ -516,7 +556,41 @@
         saveProfile();
     }
 
+    // --- TEMA (chiaro / nero / predefinito) ---
+    function themePref() {
+        var th = null;
+        try { th = new URLSearchParams(location.search).get('theme'); } catch (e) { }
+        if (th !== 'light' && th !== 'dark') {
+            try { th = localStorage.getItem('theme'); } catch (e) { th = null; }
+        }
+        return (th === 'light' || th === 'dark') ? th : 'default';
+    }
+    function applyTheme(t) {
+        var el = document.documentElement;
+        if (t === 'light' || t === 'dark') el.setAttribute('data-theme', t);
+        else el.removeAttribute('data-theme');
+        document.querySelectorAll('[data-theme-btn]').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-theme-btn') === t);
+        });
+    }
+    function setTheme(t) {
+        var v = (t === 'light' || t === 'dark') ? t : 'default';
+        applyTheme(v);
+        try { if (v === 'default') localStorage.removeItem('theme'); else localStorage.setItem('theme', v); } catch (e) { }
+    }
+    applyTheme(themePref());
+
     const NEWS = [
+        { version: "5.2.8", date: "2026-09-29", items: {
+            it: [
+                "🎉 Novità: dopo l'aggiornamento appare il riepilogo di cosa c'è di nuovo",
+                "🎨 Temi: scegli tra Bianco, Nero e Predefinito nelle Impostazioni"
+            ],
+            en: [
+                "🎉 New: after updating, a summary of what's new pops up",
+                "🎨 Themes: pick White, Black or Default in Settings"
+            ]
+        }},
         { version: "5.2.7", date: "2026-09-29", items: {
             it: [
                 "📱 App autonoma: tutto il convertitore è dentro l'APK, funziona anche senza internet",
@@ -674,11 +748,11 @@
     function newsCard(n) {
         const items = n.items[LANG] || n.items.it;
         return `
-            <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid #6366f1;">
+            <div style="margin-bottom: 15px; padding: 12px; background: var(--glass-bg); border-radius: 8px; border-left: 3px solid var(--accent);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
                     <strong>v${n.version}</strong><span style="color:var(--text-muted)">${n.date}</span>
                 </div>
-                <ul style="margin:0; padding-left:18px; font-size:13px; color:var(--text-muted);">
+                <ul style="margin:0; padding-left:18px; font-size:13px; color:var(--text-muted); text-align:left;">
                     ${items.map(i => `<li>${i}</li>`).join('')}
                 </ul>
             </div>
@@ -703,6 +777,33 @@
         document.getElementById('news-archive').style.display = 'flex';
     }
     function closeNewsArchive() { document.getElementById('news-archive').style.display = 'none'; }
+
+    // --- NOVITÀ DOPO L'AGGIORNAMENTO (solo app Android) ---
+    function closeWhatsNew() { document.getElementById('whatsnew-popup').style.display = 'none'; }
+    function maybeShowWhatsNew() {
+        try {
+            if (!inApp()) return;
+            var seen = null;
+            try { seen = localStorage.getItem('newsSeen'); } catch (e) { }
+            if (seen === CURRENT_VERSION) return;
+            var tries = 0;
+            var tryShow = function () {
+                var busy = ['notif-popup', 'update-popup'].some(function (id) {
+                    var el = document.getElementById(id);
+                    return el && el.style.display === 'flex';
+                });
+                if (busy) { if (tries++ < 60) setTimeout(tryShow, 2500); return; }
+                try { localStorage.setItem('newsSeen', CURRENT_VERSION); } catch (e) { }
+                var cur = currentNews();
+                document.getElementById('whatsnew-title').textContent = '🎉 ' + t('whatsnew.title') + ' ' + CURRENT_VERSION;
+                document.getElementById('whatsnew-body').innerHTML = cur.length
+                    ? cur.map(newsCard).join('')
+                    : newsCard({ version: CURRENT_VERSION, date: '', items: { it: [t('news.empty')], en: [t('news.empty')] } });
+                document.getElementById('whatsnew-popup').style.display = 'flex';
+            };
+            setTimeout(tryShow, 1600);
+        } catch (e) { }
+    }
 
     function switchTab(t) {
         document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
@@ -917,6 +1018,7 @@
     setTimeout(() => { scheduleUpdateCheck(inApp() ? 1500 : 5000); }, 0);
     try { document.addEventListener('deviceready', () => { try { scheduleUpdateCheck(800); } catch (e) { } }); } catch (e) { }
     setTimeout(maybeAskNotif, 600);
+    maybeShowWhatsNew();
 
     // Controllo "è cambiato qualcosa": il server invia la push solo se version/build sono nuovi
     setTimeout(() => {

@@ -1,9 +1,9 @@
 {
-  "version": "5.2.7",
-  "apk_version": "5.2.7",
-  "apk_from": "5.2.6",
+  "version": "5.2.8",
+  "apk_version": "5.2.8",
+  "apk_from": "5.2.7",
   "build": 1,
-  "changes": "5.2.7: app Android autonoma - tutto dentro l'APK, funziona anche offline, aggiornamenti comodi dal popup senza conflitti",
+  "changes": "5.2.8: novità in evidenza dopo ogni aggiornamento + tema chiaro/nero a scelta nelle Impostazioni",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
