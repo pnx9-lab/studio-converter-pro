@@ -21,6 +21,20 @@ Regole per chi lavora su questo progetto (assistente incluso).
 5. Il sito live resta com'è finché non si pubblica: gli utenti vedono la
    versione precedente fino ad allora.
 
+## REGOLA DEPLOY COMBINATO (dal 6.0.0)
+
+**Ogni deploy/rilascio vale SEMPRE sia per il sito web che per l'APK**:
+stessa versione in `version.json` (`version` **e** `apk_version`) e in
+`config.xml` (version + versionCode). Ciclo completo nell'ordine:
+bump `config.xml` → `cordova build android --release` → upload APK sul
+release tag `apk` **PRIMA** del push → `version.json` (entrambe le versioni
++ build +1 + changes) → commit → push → deploy → notify.
+Niente rilasci del sito con un numero diverso dall'APK: l'utente riceve la
+notifica, controlla l'app e non trova l'aggiornamento (si pensa a un bug).
+Eccezione consentita: fix solo sito → `apk_version` invariato e title della
+push automaticamente "novità" (gestito da `functions/notify.js`, chiave KV
+`notify_apk`).
+
 ## REGOLA NOTIFICHE (obbligatoria)
 
 **Ogni modifica visibile all'utente (sito o app) deve essere notificata con una push.**

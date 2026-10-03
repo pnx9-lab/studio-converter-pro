@@ -1,9 +1,9 @@
 {
   "version": "6.0.0",
-  "apk_version": "5.2.8",
-  "apk_from": "5.2.7",
-  "build": 4,
-  "changes": "6.0.0: lente di ricerca universale, interfaccia più fluida e moderna, app PC 'coming soon' in attesa del fix - nessun aggiornamento APK",
+  "apk_version": "6.0.0",
+  "apk_from": "5.2.8",
+  "build": 5,
+  "changes": "6.0.0: lente di ricerca universale, interfaccia più fluida e moderna, app PC 'coming soon' - ora disponibile anche l'APK 6.0.0!",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
