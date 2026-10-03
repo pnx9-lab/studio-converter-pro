@@ -148,14 +148,17 @@ async function handleCheck(env) {
   }
   if (prev === now) return json({ ok: true, sent: false, state: now });
 
-  const prevVersion = String(prev).split('#')[0];
-  const isNewVersion = prevVersion !== version;
-  const title = isNewVersion
-    ? ('Nuova versione ' + version + ' disponibile!')
-    : 'Studio Converter Pro - novità';
-  const text = String(data.changes || (isNewVersion
-    ? 'Scarica subito la versione ' + version + '!'
-    : 'Ci sono novità nell\'app. Scoprile!')).slice(0, 300);
+  // Title: "Nuova versione X" solo quando cambia davvero l'APK (apk_version);
+  // un rilascio solo sito (version cambia, apk_version no) è una novità, non un aggiornamento app.
+  const apkNow = String(data.apk_version || '') || version;
+  const prevApk = await env.CREDS.get('notify_apk');
+  const apkChanged = prevApk != null && apkNow !== prevApk;
+  const title = apkChanged
+    ? ('Nuova versione ' + apkNow + ' disponibile!')
+    : ('Studio Converter Pro ' + version + ' - novità');
+  const text = String(data.changes || (apkChanged
+    ? 'Scarica subito la versione ' + apkNow + '!'
+    : 'Ci sono novità sul sito. Scoprile!')).slice(0, 300);
 
   try {
     const name = await sendPush(env, {
@@ -166,6 +169,7 @@ async function handleCheck(env) {
       url: data.download_url || ''
     });
     await env.CREDS.put(STATE_KEY, now);
+    await env.CREDS.put('notify_apk', apkNow);
     return json({ ok: true, sent: true, version: version, build: build, name: name });
   } catch (e) {
     const detail = String((e && (e.message || e)) || 'unknown').slice(0, 400);
