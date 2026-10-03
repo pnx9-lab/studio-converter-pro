@@ -87,7 +87,7 @@ I popup `update-popup`, `notif-popup` e `whatsnew-popup` devono apparire
   `index.html`, `style.css`, `favicon.svg`, `icon-192.png`, `icon-512.png`,
   `manifest.json`, `privacy*.html` **e tutta la cartella `vendor/`**.
   Non copiare `sw.js`/`version.json` (solo sito).
-  **Sync SELETTIVO**: dal 5.0.0 `index.html`/`style.css` del sito e di `www/`
+  **Sync SELETTIVO**: dal 6.0.0 `index.html`/`style.css` del sito e di `www/`
   divergono deliberatamente (www = nav glass, doppia modalità home/studio,
   icone SVG nav; sito = nav classica con la sola lente). NON sovrascrivere
   `www/` con i file del sito: applicare solo i fix mirati (es. gate
