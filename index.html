@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Studio Converter Pro Suite v5.2.8</title>
+    <title>Studio Converter Suite</title>
     
     <!-- FAVICON SVG (freccia di conversione su gradiente indaco→ciano) -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -59,8 +59,21 @@
             <div class="nav-item" onclick="switchTab('audio')" id="nav-audio"><span class="nav-icon">🎵</span><span class="nav-text" data-i18n="nav.audio">Audio</span></div>
             <div class="nav-item" onclick="switchTab('auth')" id="nav-auth"><span class="nav-icon">👤</span><span class="nav-text" id="authLabel">Login</span></div>
             <div class="nav-item" onclick="switchTab('settings')" id="nav-settings"><span class="nav-icon">⚙️</span><span class="nav-text" data-i18n="nav.settings">Impostazioni</span></div>
+            <div class="nav-search" id="navSearch" title="Cerca"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.3"/><path d="m15.3 15.3 4.7 4.7"/></svg></div>
         </div>
     </nav>
+
+    <!-- RICERCA UNIVERSALE -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-bar">
+            <svg class="search-bar-svg" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.3"/><path d="m15.3 15.3 4.7 4.7"/></svg>
+            <input type="text" id="searchInput" data-i18n-ph="search.ph" placeholder="Cosa troviamo oggi?" autocomplete="off">
+            <button class="search-close" id="searchClose" aria-label="Chiudi">✕</button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <a class="focus-back" id="focusBack" data-i18n="search.back">← Tutti i formati</a>
 
     <!-- HOME -->
     <section id="tab-home" class="tab-content active">
@@ -294,7 +307,7 @@
             <div class="setting-row" data-newui="1">
                 <span class="setting-label" data-i18n="set.appsDl">⬇️ Scarica app</span>
                 <div class="setting-actions">
-                    <a class="setting-btn" href="https://download942.mediafire.com/kmu0q9xf029g7e5l2reVgHnzyKTGDXq8Q-SY2H1VOzAoy0AIOzYeYF_Ok-E9K-jOdVlQEn4Smyk6Zb54X8jLiCK63h5NNN7yn1nuAEVPCdKA2_GjXHGrT9NIecJuYKBuHCCXad7RnaP4mSvkbhXWJfKwGbZTtZ3ynv69P_yDIA/6elxecq4l485h9v/StudioConverterPro-Setup-5.2.3.exe" download="StudioConverterPro-Setup-5.2.3.exe" target="_blank" rel="noopener" data-i18n="btn.desktopShort">💻 Desktop</a>
+                    <button type="button" class="setting-btn" onclick="showToast(t('btn.desktopSoon'))" data-i18n="btn.desktopShort">💻 Desktop</button>
                     <a class="setting-btn apk" href="https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk" download="studiopro.apk" target="_blank" rel="noopener" data-i18n="btn.apkShort">📱 APK</a>
                 </div>
             </div>
@@ -350,7 +363,7 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "5.2.8";
+    const CURRENT_VERSION = "5.0.0";
     const VERSION_URL = "version.json";
     // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
     const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
@@ -363,11 +376,15 @@
             "nav.home": "Home", "nav.img": "Img", "nav.video": "Video", "nav.audio": "Audio", "nav.login": "Login",
             "home.title": "Studio Converter Suite",
             "home.subtitle": "Tutti i formati. Immagini, Video, Audio. Zero limiti.",
+            "search.ph": "Cosa troviamo oggi?",
+            "search.none": "Nessun risultato. Prova: img, video, audio, pdf, mp4...",
+            "search.back": "← Tutti i formati",
             "home.support": "Ti è utile? Offrimi un caffè ☕",
             "feat.img": "Immagini", "feat.video": "Video", "feat.audio": "Audio",
             "btn.checkUpdates": "🔍 Controlla Aggiornamenti",
             "btn.checkUpdatesShort": "🔍 Controlla",
             "btn.desktopShort": "💻 Desktop",
+            "btn.desktopSoon": "⏳ Prossimamente! L'app per PC è in arrivo",
             "btn.apkShort": "📱 APK",
             "btn.downloadDesktop": "⬇️ Scarica Desktop App",
             "btn.downloadApk": "📱 Scarica APK (Android)",
@@ -444,11 +461,15 @@
             "nav.home": "Home", "nav.img": "Images", "nav.video": "Video", "nav.audio": "Audio", "nav.login": "Login",
             "home.title": "Studio Converter Suite",
             "home.subtitle": "Every format. Images, Video, Audio. No limits.",
+            "search.ph": "What are we finding today?",
+            "search.none": "No results. Try: img, video, audio, pdf, mp4...",
+            "search.back": "← All formats",
             "home.support": "Find it useful? Buy me a coffee ☕",
             "feat.img": "Images", "feat.video": "Video", "feat.audio": "Audio",
             "btn.checkUpdates": "🔍 Check for Updates",
             "btn.checkUpdatesShort": "🔍 Check",
             "btn.desktopShort": "💻 Desktop",
+            "btn.desktopSoon": "⏳ Coming soon! The PC app is on the way",
             "btn.apkShort": "📱 APK",
             "btn.downloadDesktop": "⬇️ Download Desktop App",
             "btn.downloadApk": "📱 Download APK (Android)",
@@ -583,6 +604,18 @@
     applyTheme(themePref());
 
     const NEWS = [
+        { version: "5.0.0", date: "2026-10-03", items: {
+            it: [
+                "🔍 Nuova lente di ricerca: trova formati e strumenti al volo",
+                "🎨 Interfaccia più moderna e fluida (animazioni più morbide)",
+                "⏳ App per PC: prossimamente (download temporaneamente disattivato)"
+            ],
+            en: [
+                "🔍 New search lens: find formats and tools instantly",
+                "🎨 Smoother, more modern interface",
+                "⏳ PC app: coming soon (download temporarily disabled)"
+            ]
+        }},
         { version: "5.2.8", date: "2026-09-29", items: {
             it: [
                 "🎉 Novità: dopo l'aggiornamento appare il riepilogo di cosa c'è di nuovo",
@@ -808,6 +841,7 @@
     }
 
     function switchTab(t) {
+        if (typeof exitFocus === 'function') exitFocus();
         document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
         document.getElementById('tab-'+t).classList.add('active');
@@ -961,7 +995,10 @@
         if (!rows.length) return;
         const show = () => rows.forEach(r => { r.style.display = ''; });
         const hide = () => rows.forEach(r => { r.style.display = 'none'; });
-        if (!inApp()) { show(); return; }
+        let appQ = false;
+        try { appQ = new URLSearchParams(location.search).get('app') === 'cordova'; } catch (e) { }
+        // file:// aperto nel browser locale = sviluppo, non è l'app: righe sempre visibili
+        if (!inApp() || (location.protocol === 'file:' && !appQ)) { show(); return; }
         appVersion().then(v => { (v && verGte(v, NEW_UI_FROM)) ? show() : hide(); }).catch(hide);
     }
     applyUiGate();
@@ -1829,6 +1866,149 @@
             if (tries > 60) clearInterval(iv);
         }, 1000);
     })();
+
+    // ===== RICERCA UNIVERSALE (LENTA) =====
+    const SCAT_ICON = { img: '🖼️', video: '🎬', audio: '🎵' };
+    const FMT_ALIAS = { jpeg: 'jpg', jpe: 'jpg' };
+    const SEARCH_STOP = ['to', 'in', 'into', 'di', 'da', 'del', 'the', 'a', 'an', 'for', 'con', 'converter', 'convert', 'conversione', 'conversion'];
+    let searchIndex = [], focusState = null;
+
+    function searchCatName(cat) {
+        try { return t('feat.' + cat); } catch (e) { return cat; }
+    }
+
+    function buildSearchIndex() {
+        searchIndex = [];
+        const add = (cat, to, sel, val, sub) => {
+            const kw = [cat];
+            if (cat === 'img') kw.push('img', 'image', 'immagini', 'immagine', 'foto', 'picture');
+            if (cat === 'video') kw.push('video', 'movie', 'film');
+            if (cat === 'audio') kw.push('audio', 'suono', 'musica', 'music', 'song', 'canzone');
+            const f = (FMT_ALIAS[val] || val).toLowerCase();
+            kw.push(f, String(to).toLowerCase());
+            if (sub) kw.push('audio', (FMT_ALIAS[sub[1]] || sub[1]).toLowerCase());
+            searchIndex.push({ cat, to, sel, val, sub, kw });
+        };
+        ['img', 'video', 'audio'].forEach(cat => {
+            const sel = document.getElementById('formatSelect-' + cat);
+            if (!sel) return;
+            Array.prototype.forEach.call(sel.options, o => {
+                if (cat === 'video' && o.value === 'audio-extract') return;
+                const f = FMT_ALIAS[o.value] || o.value;
+                add(cat, f.toUpperCase(), 'formatSelect-' + cat, o.value, null);
+            });
+        });
+        const af = document.getElementById('audioFormatSelect-video');
+        if (af) Array.prototype.forEach.call(af.options, o => {
+            const f = FMT_ALIAS[o.value] || o.value;
+            add('video', f.toUpperCase(), 'formatSelect-video', 'audio-extract', ['audioFormatSelect-video', o.value]);
+        });
+    }
+
+    function searchMatch(q) {
+        let toks = String(q || '').toLowerCase().split(/[^a-z0-9]+/);
+        toks = toks.map(x => x.replace(/convert(ere|ing|ioni|one|ed)?/g, ''))
+            .filter(x => x && x.length >= 2 && SEARCH_STOP.indexOf(x) < 0);
+        if (!toks.length) return [];
+        const out = [];
+        searchIndex.forEach((it, i) => {
+            let score = 0, ok = true;
+            for (let n = 0; n < toks.length; n++) {
+                const tk = toks[n];
+                let s = 0;
+                if (it.kw.indexOf(tk) >= 0) s = 2;
+                else if (tk.length >= 3 && it.kw.some(k => k.indexOf(tk) >= 0)) s = 1;
+                else if (tk.length >= 3 && it.kw.some(k => k.length >= 3 && tk.indexOf(k) >= 0)) s = 1;
+                if (!s) { ok = false; break; }
+                if (tk === 'audio') s = (it.sub && it.cat === 'video') ? 1 : (it.cat === 'audio' ? 3 : s);
+                score += s;
+            }
+            if (ok) out.push({ it, i, score });
+        });
+        out.sort((a, b) => b.score - a.score);
+        return out;
+    }
+
+    function renderResults(q) {
+        const el = document.getElementById('searchResults');
+        const qq = String(q || '').trim();
+        if (!qq) { el.innerHTML = ''; return; }
+        const list = searchMatch(qq);
+        if (!list.length) { el.innerHTML = '<div class="search-empty">' + t('search.none') + '</div>'; return; }
+        el.innerHTML = list.slice(0, 14).map(r =>
+            '<div class="search-item" data-i="' + r.i + '">' +
+            '<span class="si-icon">' + SCAT_ICON[r.it.cat] + '</span>' +
+            '<span class="si-label">' + searchCatName(r.it.cat) + ' → ' + r.it.to + '</span>' +
+            '</div>').join('');
+    }
+
+    function openSearch() {
+        const ov = document.getElementById('searchOverlay');
+        ov.classList.add('open');
+        const inp = document.getElementById('searchInput');
+        inp.value = '';
+        renderResults('');
+        setTimeout(() => { try { inp.focus(); } catch (e) { } }, 60);
+    }
+
+    function closeSearch() {
+        document.getElementById('searchOverlay').classList.remove('open');
+    }
+
+    function exitFocus() {
+        if (!focusState) return;
+        const item = focusState;
+        focusState = null;
+        const sec = document.getElementById('tab-' + item.cat);
+        const h2 = sec.querySelector('h2');
+        if (sec._h2orig) h2.outerHTML = sec._h2orig;
+        const opt = document.getElementById('optionsPanel-' + item.cat);
+        const lbl = opt.querySelector('label');
+        const sel = document.getElementById(item.sel);
+        if (opt._fOrig) {
+            lbl.style.display = opt._fOrig.lbl;
+            sel.style.display = opt._fOrig.sel;
+            opt._fOrig = null;
+        }
+        if (item.cat === 'video') {
+            try { document.getElementById('formatSelect-video').dispatchEvent(new Event('change')); } catch (e) { }
+        }
+        document.getElementById('focusBack').classList.remove('show');
+    }
+
+    function openFocus(item) {
+        closeSearch();
+        const sec = document.getElementById('tab-' + item.cat);
+        if (!sec._h2orig) sec._h2orig = sec.querySelector('h2').outerHTML;
+        switchTab(item.cat);
+        focusState = item;
+        const opt = document.getElementById('optionsPanel-' + item.cat);
+        const lbl = opt.querySelector('label');
+        const sel = document.getElementById(item.sel);
+        if (!opt._fOrig) opt._fOrig = { lbl: lbl.style.display, sel: sel.style.display };
+        lbl.style.display = 'none';
+        sel.style.display = 'none';
+        sel.value = item.val;
+        if (item.sub) document.getElementById(item.sub[0]).value = item.sub[1];
+        if (item.cat === 'video') document.getElementById('audioFormatContainer-video').style.display = 'none';
+        const h2 = sec.querySelector('h2');
+        h2.removeAttribute('data-i18n');
+        h2.innerHTML = SCAT_ICON[item.cat] + ' ' + searchCatName(item.cat) + ' → <b>' + item.to + '</b>';
+        const fb = document.getElementById('focusBack');
+        sec.insertBefore(fb, sec.querySelector('.main-card'));
+        fb.classList.add('show');
+    }
+
+    buildSearchIndex();
+    document.getElementById('navSearch').addEventListener('click', openSearch);
+    document.getElementById('searchClose').addEventListener('click', closeSearch);
+    document.getElementById('searchOverlay').addEventListener('click', function (e) { if (e.target === this) closeSearch(); });
+    document.getElementById('searchInput').addEventListener('input', function () { renderResults(this.value); });
+    document.getElementById('searchResults').addEventListener('click', function (e) {
+        const el = e.target.closest ? e.target.closest('.search-item') : null;
+        if (el) { const it = searchIndex[+el.dataset.i]; if (it) openFocus(it); }
+    });
+    document.getElementById('focusBack').addEventListener('click', exitFocus);
 </script>
 </body>
 </html>
