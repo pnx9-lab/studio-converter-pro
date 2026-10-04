@@ -307,7 +307,7 @@
             <div class="setting-row" data-newui="1">
                 <span class="setting-label" data-i18n="set.appsDl">⬇️ Scarica app</span>
                 <div class="setting-actions">
-                    <button type="button" class="setting-btn" onclick="showToast(t('btn.desktopSoon'))" data-i18n="btn.desktopShort">💻 Desktop</button>
+                    <a class="setting-btn" href="https://archive.org/download/studio-converter-pro-win-32-x-64.7z/StudioSetup.exe" target="_blank" rel="noopener" data-i18n="btn.desktopShort">💻 Desktop</a>
                     <a class="setting-btn apk" href="https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk" download="studiopro.apk" target="_blank" rel="noopener" data-i18n="btn.apkShort">📱 APK</a>
                 </div>
             </div>
@@ -363,7 +363,7 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "6.0.0";
+    const CURRENT_VERSION = "6.0.1";
     const VERSION_URL = "version.json";
     // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
     const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
@@ -384,7 +384,6 @@
             "btn.checkUpdates": "🔍 Controlla Aggiornamenti",
             "btn.checkUpdatesShort": "🔍 Controlla",
             "btn.desktopShort": "💻 Desktop",
-            "btn.desktopSoon": "⏳ Prossimamente! L'app per PC è in arrivo",
             "btn.apkShort": "📱 APK",
             "btn.downloadDesktop": "⬇️ Scarica Desktop App",
             "btn.downloadApk": "📱 Scarica APK (Android)",
@@ -469,7 +468,6 @@
             "btn.checkUpdates": "🔍 Check for Updates",
             "btn.checkUpdatesShort": "🔍 Check",
             "btn.desktopShort": "💻 Desktop",
-            "btn.desktopSoon": "⏳ Coming soon! The PC app is on the way",
             "btn.apkShort": "📱 APK",
             "btn.downloadDesktop": "⬇️ Download Desktop App",
             "btn.downloadApk": "📱 Download APK (Android)",
@@ -604,6 +602,16 @@
     applyTheme(themePref());
 
     const NEWS = [
+        { version: "6.0.1", date: "2026-10-03", items: {
+            it: [
+                "📢 Le novità ora anche nell'app: sezione 📢 Novità nella home",
+                "💻 App per PC torna scaricabile (nuovo link)"
+            ],
+            en: [
+                "📢 What's new now in the app too: the 📢 What's New home section",
+                "💻 PC app download is back (new link)"
+            ]
+        }},
         { version: "6.0.0", date: "2026-10-03", items: {
             it: [
                 "🔍 Nuova lente di ricerca: trova formati e strumenti al volo",

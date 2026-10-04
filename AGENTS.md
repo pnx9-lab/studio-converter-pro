@@ -21,6 +21,15 @@ Regole per chi lavora su questo progetto (assistente incluso).
 5. Il sito live resta com'è finché non si pubblica: gli utenti vedono la
    versione precedente fino ad allora.
 
+## REGOLA NOVITÀ HOME (obbligatoria)
+
+**La sezione 📢 Novità nella home deve comparire SIA sul sito web SIA
+nell'APK**: `news-section`/`news-list` sempre presente e popolata. A ogni
+rilascio aggiornare `CURRENT_VERSION` + una nuova entry `NEWS` (in testa)
+**sia in `index.html` del sito sia in `C:\My project\studiopro\www\index.html`**,
+con la **stessa versione in entrambi** (se nell'app `CURRENT_VERSION` resta
+vecchia, la home mostra novità obsolete e l'utente pensa che manchino).
+
 ## REGOLA DEPLOY COMBINATO (dal 6.0.0)
 
 **Ogni deploy/rilascio vale SEMPRE sia per il sito web che per l'APK**:
