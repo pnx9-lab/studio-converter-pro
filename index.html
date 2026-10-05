@@ -115,7 +115,7 @@
                 <label data-i18n="img.format">Formato Output</label>
                 <select id="formatSelect-img">
                     <option value="png">PNG</option><option value="jpeg">JPG / JPEG</option><option value="webp">WEBP</option>
-                    <option value="avif">AVIF</option><option value="bmp">BMP</option><option value="ico" data-i18n="opt.ico">ICO (Icona)</option><option value="pdf" data-i18n="opt.pdfDoc">PDF Documento</option>
+                    <option value="avif">AVIF</option><option value="bmp">BMP</option><option value="ico" data-i18n="opt.ico">ICO (Icona)</option>
                 </select>
                 <div style="display:flex; gap:10px; margin-top:15px;">
                     <div style="flex:1;"><label style="margin-top:0" data-i18n="img.width">Larghezza</label><input type="number" id="widthInput" placeholder="Auto" data-i18n-ph="ph.auto"></div>
@@ -500,7 +500,7 @@
             "toast.badFile": "⚠️ File non valido per questa sezione",
             "common.convertTo": "Converti in", "common.audioFormat": "Formato Audio",
             "common.value": "Valore:", "common.change": "← Cambia", "common.convert": "CONVERTI",
-            "opt.ico": "ICO (Icona)", "opt.pdfDoc": "PDF Documento", "opt.gif": "GIF Animata",
+            "opt.ico": "ICO (Icona)", "opt.gif": "GIF Animata",
             "opt.3gp": "3GP (Mobile Vecchio)", "opt.extract": "🎵 Estrai Audio (MP3/WAV/FLAC...)",
             "opt.mp3": "MP3 (Compresso)", "opt.flac": "FLAC (Alta Qualità)",
             "ph.auto": "Auto",
@@ -523,9 +523,8 @@
             "toast.updError": "❌ Errore controllo aggiornamenti",
             "toast.updNewSite": "🔄 C'è un aggiornamento del sito (",
             "toast.error": "❌ Errore: ",
-            "toast.noJsPdf": "libreria PDF non caricata (connessione?)",
             "toast.imgNotReady": "immagine non caricata: riprova",
-            "prog.prep": "Preparazione...", "prog.pdf": "Generazione PDF...",
+            "prog.prep": "Preparazione...",
             "prog.save": "Salvataggio...",
             "prog.icon": "Creazione ICO...", "prog.render": "Rendering immagine...",
             "prog.done": "Fatto!", "prog.decode": "Decodifica...",
@@ -594,7 +593,7 @@
             "toast.badFile": "⚠️ Invalid file for this section",
             "common.convertTo": "Convert to", "common.audioFormat": "Audio Format",
             "common.value": "Value:", "common.change": "← Change", "common.convert": "CONVERT",
-            "opt.ico": "ICO (Icon)", "opt.pdfDoc": "PDF Document", "opt.gif": "Animated GIF",
+            "opt.ico": "ICO (Icon)", "opt.gif": "Animated GIF",
             "opt.3gp": "3GP (Old Mobile)", "opt.extract": "🎵 Extract Audio (MP3/WAV/FLAC...)",
             "opt.mp3": "MP3 (Compressed)", "opt.flac": "FLAC (High Quality)",
             "ph.auto": "Auto",
@@ -617,9 +616,8 @@
             "toast.updError": "❌ Error checking for updates",
             "toast.updNewSite": "🔄 Site update available (",
             "toast.error": "❌ Error: ",
-            "toast.noJsPdf": "PDF library not loaded (connection?)",
             "toast.imgNotReady": "image not loaded: try again",
-            "prog.prep": "Preparing...", "prog.pdf": "Generating PDF...",
+            "prog.prep": "Preparing...",
             "prog.save": "Saving...",
             "prog.icon": "Creating ICO...", "prog.render": "Rendering image...",
             "prog.done": "Done!", "prog.decode": "Decoding...",
@@ -1822,27 +1820,7 @@
             let ph=Math.max(1,Math.round(Number(document.getElementById('heightInput').value)||oH||1));
             const ls=Math.max(pw,ph); if(ls>CAP){const k=CAP/ls; pw=Math.max(1,Math.round(pw*k)); ph=Math.max(1,Math.round(ph*k));}
             await tick();
-            if(fmt==='pdf'){
-                pB.style.width='35%'; pT.textContent=t('prog.pdf'); await tick(30);
-                const J=window.jspdf&&window.jspdf.jsPDF; if(!J) throw new Error(t('toast.noJsPdf'));
-                let src=null, imgFmt=null;
-                if(!imgBytes){ try{ imgBytes=await readBytes(imgF); }catch(e){ imgBytes=null; } }
-                if(imgBytes && Math.max(pImg.naturalWidth,pImg.naturalHeight)<=CAP){ imgFmt=sniffImageFmt(imgBytes); if(imgFmt) src=imgBytes; }
-                if(!src){
-                    const k=Math.min(1, CAP/Math.max(1,pImg.naturalWidth,pImg.naturalHeight));
-                    const c=document.createElement('canvas');
-                    c.width=Math.max(1,Math.round(pImg.naturalWidth*k));
-                    c.height=Math.max(1,Math.round(pImg.naturalHeight*k));
-                    c.getContext('2d').drawImage(pImg,0,0,c.width,c.height);
-                    src=c.toDataURL('image/jpeg',0.92);
-                    c.width=0;c.height=0;
-                }
-                pB.style.width='70%'; pT.textContent=t('prog.render'); await tick(30);
-                const p=new J({orientation:pw>ph?'l':'p',unit:'px',format:[pw,ph]});
-                p.addImage(src, imgFmt||'JPEG', 0,0, pw, ph);
-                pB.style.width='90%'; pT.textContent=t('prog.save'); await tick(30);
-                await downloadBlob(p.output('blob'),'out.pdf');
-            } else if(fmt==='ico'){
+            if(fmt==='ico'){
                 pB.style.width='50%'; pT.textContent=t('prog.icon'); await tick(30);
                 const c=document.createElement('canvas');c.width=32;c.height=32;c.getContext('2d').drawImage(pImg,0,0,32,32);
                 const blob=await canvasToIcoBlob(c);

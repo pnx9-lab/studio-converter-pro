@@ -2,8 +2,8 @@
   "version": "6.1.0",
   "apk_version": "6.1.0",
   "apk_from": "6.0.1",
-  "build": 7,
-  "changes": "6.1.0: nuova sezione Convert to PDF (immagini e testo → PDF) con emoji e markdown + validazione file in tutte le sezioni",
+  "build": 8,
+  "changes": "6.1.0: fix — Convert to PDF accessibile dallo Studio nell'APP + rimossa la vecchia conversione Immagini→PDF dalla tab Immagini",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
