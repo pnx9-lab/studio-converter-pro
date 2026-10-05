@@ -7,7 +7,7 @@ Regole per chi lavora su questo progetto (assistente incluso).
 **Sviluppo locale, pubblicazione solo a lavoro finito.**
 
 1. Le modifiche per la nuova versione si fanno **in locale**: si modifica,
-   si testa (script in `%TEMP%\opencode\`, screenshot, e2e), si corregge.
+   si testa (script in `F:\app Codici\opencode\`, screenshot, e2e), si corregge.
 2. **NIENTE `git commit`, `git push` o deploy durante lo sviluppo**: se un
    test fallisce si corregge e si ritesta, sempre restando in locale.
 3. **PRIMA del commit e del push va fatta verificare la cosa all'utente**:
@@ -124,7 +124,7 @@ I popup `update-popup`, `notif-popup` e `whatsnew-popup` devono apparire
   è patchato a mano: `noExitRuntime:!0` nel config del core (senza, ogni secondo
   `ff.run()` muore con "Program terminated with exit(0)"). Se si riescarica il
   loader da npm, **riapplicare il patch** (stringa `r({mainScriptUrlOrBlob:n,`).
-- Test end-to-end del sito: script in `%TEMP%\opencode\`
+- Test end-to-end del sito: script in `F:\app Codici\opencode\`
   (`mkexttest.js`, `testsrv.js`, `rune2e.ps1`, `syntaxcheck.js`);
   Chrome headless con `--no-proxy-server` (altrimenti dà ERR_CONNECTION_REFUSED).
   `rune2e.ps1 -Upd` simula il popup di aggiornamento in app (`?app=cordova`,
