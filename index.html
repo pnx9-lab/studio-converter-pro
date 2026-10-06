@@ -456,7 +456,7 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "6.1.0";
+    const CURRENT_VERSION = "6.1.1";
     const VERSION_URL = "version.json";
     // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
     const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
@@ -713,6 +713,18 @@
     applyTheme(themePref());
 
     const NEWS = [
+        { version: "6.1.1", date: "2026-10-05", items: {
+            it: [
+                "🔍 Ricerca a tema: barra bianca, nera o predefinita come lo sfondo",
+                "📱 Convert to PDF accessibile dallo Studio nell'app",
+                "🗑️ Rimossa la vecchia conversione Immagini→PDF dalla tab Immagini"
+            ],
+            en: [
+                "🔍 Themed search: white, black or default bar matching the background",
+                "📱 Convert to PDF reachable from Studio in the app",
+                "🗑️ Removed the old Images→PDF conversion from the Images tab"
+            ]
+        }},
         { version: "6.1.0", date: "2026-10-05", items: {
             it: [
                 "📄 Nuova sezione Convert to PDF: crea PDF da immagini e documenti di testo",

@@ -1,9 +1,9 @@
 {
-  "version": "6.1.0",
-  "apk_version": "6.1.0",
-  "apk_from": "6.0.1",
-  "build": 8,
-  "changes": "6.1.0: fix — Convert to PDF accessibile dallo Studio nell'APP + rimossa la vecchia conversione Immagini→PDF dalla tab Immagini",
+  "version": "6.1.1",
+  "apk_version": "6.1.1",
+  "apk_from": "6.1.0",
+  "build": 9,
+  "changes": "6.1.1: ricerca a tema (bianco/nero/predefinito), Convert to PDF dallo Studio nell'APP e rimossa la vecchia conversione Immagini→PDF",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }
