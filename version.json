@@ -1,9 +1,9 @@
 {
-  "version": "6.1.1",
+  "version": "6.2.0",
   "apk_version": "6.1.1",
   "apk_from": "6.1.0",
-  "build": 9,
-  "changes": "6.1.1: ricerca a tema (bianco/nero/predefinito), Convert to PDF dallo Studio nell'APP e rimossa la vecchia conversione Immagini→PDF",
+  "build": 10,
+  "changes": "6.2.0: nuovo accesso con Login/Registrazione nelle Impostazioni, badge PRO, logout rosso e Non disturbare reale",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }

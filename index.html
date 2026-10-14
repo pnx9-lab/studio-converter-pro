@@ -58,7 +58,7 @@
             <div class="nav-item" onclick="switchTab('video')" id="nav-video"><span class="nav-icon">🎬</span><span class="nav-text" data-i18n="nav.video">Video</span></div>
             <div class="nav-item" onclick="switchTab('audio')" id="nav-audio"><span class="nav-icon">🎵</span><span class="nav-text" data-i18n="nav.audio">Audio</span></div>
             <div class="nav-item" onclick="switchTab('pdf')" id="nav-pdf"><span class="nav-icon">📄</span><span class="nav-text" data-i18n="nav.pdf">PDF</span></div>
-            <div class="nav-item" onclick="switchTab('auth')" id="nav-auth"><span class="nav-icon">👤</span><span class="nav-text" id="authLabel">Login</span></div>
+            <div class="nav-item" onclick="switchTab('iso')" id="nav-iso" style="display:none;"><span class="nav-icon">💿</span><span class="nav-text" data-i18n="nav.iso">ISO</span></div>
             <div class="nav-item" onclick="switchTab('settings')" id="nav-settings"><span class="nav-icon">⚙️</span><span class="nav-text" data-i18n="nav.settings">Impostazioni</span></div>
             <div class="nav-search" id="navSearch" title="Cerca"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.3"/><path d="m15.3 15.3 4.7 4.7"/></svg></div>
         </div>
@@ -87,6 +87,36 @@
                 <div class="feature-card" onclick="switchTab('video')"><div class="f-icon">🎬</div><h3 data-i18n="feat.video">Video</h3><p>MP4, WEBM, MOV, GIF, MKV, AVI.</p></div>
                 <div class="feature-card" onclick="switchTab('audio')"><div class="f-icon">🎵</div><h3 data-i18n="feat.audio">Audio</h3><p>MP3, WAV, OGG, AAC, FLAC, M4A.</p></div>
                 <div class="feature-card" onclick="switchTab('pdf')"><div class="f-icon">📄</div><h3 data-i18n="feat.pdf">Convert to PDF</h3><p>Immagini e testo → PDF.</p></div>
+            </div>
+            <div id="premium-section" style="display:none; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+                <h3 style="margin: 0 0 5px 0; font-size: 18px;">⭐ Premium</h3>
+                <p style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 13.5px;" data-i18n="prem.sub">Il sito resta gratuito per tutti. Con Premium: file fino a 30GB e conversioni più veloci.</p>
+                <div class="prem-plans">
+                    <div class="prem-card">
+                        <div class="prem-price">5€<span data-i18n="prem.perMonth">/mese</span></div>
+                        <button type="button" class="btn-convert prem-buy" id="premBuyM" data-i18n="prem.buy">⭐ Abbonati</button>
+                    </div>
+                    <div class="prem-card prem-card-best">
+                        <div class="prem-badge" data-i18n="prem.best">2 mesi gratis</div>
+                        <div class="prem-price">60€<span data-i18n="prem.perYear">/anno</span></div>
+                        <button type="button" class="btn-convert prem-buy" id="premBuyY" data-i18n="prem.buy">⭐ Abbonati</button>
+                    </div>
+                </div>
+                <ul class="prem-feats">
+                    <li data-i18n="prem.f1">File fino a 30GB (vs 1GB gratuiti)</li>
+                    <li data-i18n="prem.f2">Conversioni più veloci</li>
+                </ul>
+                <div class="prem-activate-row">
+                    <span data-i18n="prem.have">Hai già una licenza?</span>
+                    <input type="text" id="premKeyInput" placeholder="Codice licenza..." data-i18n-ph="prem.keyPh" maxlength="200" style="max-width:200px;">
+                    <button type="button" id="premActivateBtn" data-i18n="prem.activate">Attiva</button>
+                </div>
+                <div id="premStatus" style="display:none; margin-top:10px; text-align:center; font-weight:600; color:#f59e0b;"></div>
+            </div>
+            <div id="coupon-section" style="display:none; margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--glass-border);">
+                <h3 style="margin: 0 0 12px 0; font-size: 18px;" data-i18n="coupon.title">🎟️ Coupon</h3>
+                <p style="margin: 0 0 12px 0; color: var(--text-muted); font-size: 13px;" data-i18n="coupon.sub">Usali al checkout per sconti esclusivi.</p>
+                <div id="coupon-list"></div>
             </div>
             <div id="news-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
                 <h3 style="margin: 0 0 15px 0; font-size: 18px;" data-i18n="news.title">📢 Novità</h3>
@@ -315,51 +345,67 @@
         </div>
     </section>
 
-    <!-- AUTH -->
-    <section id="tab-auth" class="tab-content">
-        <div class="auth-card" id="authFormsContainer">
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="btnLoginTab" onclick="toggleAuth('login')">Login</button>
-                <button class="auth-tab" id="btnSignupTab" onclick="toggleAuth('signup')">Sign Up</button>
+    <!-- CONVERT TO ISO (solo sito) -->
+    <section id="tab-iso" class="tab-content" style="display:none;">
+        <h2 style="text-align:center; margin-top:10px;">💿 <span data-i18n="iso.h2">Convert to ISO</span></h2>
+        <div class="main-card">
+            <div class="dropzone" id="dz-iso">
+                <div class="dropzone-icon" id="dzIcon-iso">💾</div>
+                <div class="dropzone-title" id="dzTitle-iso" data-i18n="iso.select">Seleziona un file immagine (.img)</div>
+                <div class="dropzone-sub" data-i18n="iso.sub">IMG o ISO — max 30 GB</div>
+                <input type="file" id="fileInput-iso" hidden accept=".img,.iso">
             </div>
-            <form id="formLogin" class="auth-form">
-                <h2 data-i18n="auth.welcome">Bentornato! 👋</h2>
-                <label data-i18n="auth.username">Username</label><input type="text" id="loginUser" required autocomplete="username">
-                <label data-i18n="auth.password">Password</label>
-                <div class="pw-wrap">
-                    <input type="password" id="loginPass" required autocomplete="current-password">
-                    <button type="button" class="pw-eye" onclick="togglePw('loginPass', this)" title="Mostra/Nascondi password" aria-label="Mostra password">👁️</button>
+            <div class="iso-info" id="isoInfo"></div>
+            <div class="options" id="optionsPanel-iso" style="opacity:0.5; pointer-events:none;">
+                <label data-i18n="iso.volName">Nome volume</label>
+                <input type="text" id="isoVolName" maxlength="16" value="MY_VOLUME" style="width:100%; padding:9px 12px; border-radius:10px; background:var(--field-bg); color:var(--field-color); border:1px solid var(--glass-border);">
+            </div>
+            <div id="progress-container-iso" style="display:none; margin-top:20px;">
+                <div style="background:var(--range-bg); height:8px; border-radius:4px; overflow:hidden;">
+                    <div id="progress-bar-iso" style="background:#ec4899; height:100%; width:0%; transition:0.3s;"></div>
                 </div>
-                <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="auth.loginBtn">ACCEDI</button>
-            </form>
-            <form id="formSignup" class="auth-form" style="display:none;">
-                <h2 data-i18n="auth.signupTitle">Crea Account ✨</h2>
-                <label data-i18n="auth.username">Username</label><input type="text" id="signupUser" required autocomplete="username">
-                <label data-i18n="auth.password">Password</label>
-                <div class="pw-wrap">
-                    <input type="password" id="signupPass" required autocomplete="new-password">
-                    <button type="button" class="pw-eye" onclick="togglePw('signupPass', this)" title="Mostra/Nascondi password" aria-label="Mostra password">👁️</button>
-                </div>
-                <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="auth.signupBtn">REGISTRATI</button>
-            </form>
-            <div id="authMessage" style="margin-top:15px; text-align:center; font-size:14px;"></div>
-        </div>
-        <div class="profile-card" id="profileContainer" style="display:none;">
-            <div class="profile-avatar" id="profileAvatar">U</div>
-            <h2 id="profileName">User</h2>
-            <p style="color:var(--text-muted); margin-bottom:20px;" data-i18n="auth.account">Account Pro Suite</p>
-            <button class="btn-logout" onclick="logout()" data-i18n="auth.logout">ESCI</button>
+                <div id="progress-text-iso" style="text-align:center; font-size:12px; margin-top:5px; color:var(--text-muted)">...</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-reset" id="resetBtn-iso" disabled data-i18n="common.change">← Cambia</button>
+                <button class="btn-convert" id="convertBtn-iso" disabled data-i18n="common.convert">CONVERTI</button>
+            </div>
         </div>
     </section>
 
+    <!-- AUTH rimossa: login dal popup nelle impostazioni -->
+
     <!-- SETTINGS -->
     <section id="tab-settings" class="tab-content">
+        <!-- Profilo -->
+        <div class="auth-card settings-card" id="profileSettings" style="display:none;">
+            <div id="pcLoggedOut" style="display:none;">
+                <div class="pc-head">
+                    <div class="profile-avatar">👤</div>
+                    <div class="pc-links">
+                        <button type="button" class="pc-link" onclick="openAuthPopup('login')" data-i18n="auth.loginLink">Login</button>
+                        <span class="pc-sep">/</span>
+                        <button type="button" class="pc-link" onclick="openAuthPopup('signup')" data-i18n="auth.signupLink">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pcLoggedIn" style="display:none;">
+                <div class="pc-head">
+                    <div class="profile-avatar" id="pcAvatar">U</div>
+                    <div class="pc-id">
+                        <div class="pc-name"><span id="pcName">User</span> <span class="pro-badge">PRO</span></div>
+                        <p id="pcEmail" style="color:var(--text-muted); margin:4px 0 0; font-size:13px; display:none;"></p>
+                    </div>
+                    <button type="button" class="pc-edit" onclick="openProfileMenu()" title="Modifica">✏️</button>
+                </div>
+            </div>
+        </div>
         <!-- IMPOSTAZIONI: lingua, cartella di salvataggio, download -->
         <div class="auth-card settings-card" id="settingsContainer">
             <h2 class="settings-title" data-i18n="set.title">⚙️ Impostazioni</h2>
 
             <div class="setting-row">
-                <span class="setting-label" data-i18n="set.lang">Lingua</span>
+                <span class="setting-label"><span class="gicon">🌐</span> <span data-i18n="set.lang">Lingua</span></span>
                 <div class="lang-switch">
                     <button type="button" id="setLangIt" onclick="setLang('it')">IT</button>
                     <button type="button" id="setLangEn" onclick="setLang('en')">EN</button>
@@ -367,7 +413,7 @@
             </div>
 
             <div class="setting-row">
-                <span class="setting-label" data-i18n="set.theme">🎨 Tema</span>
+                <span class="setting-label"><span class="gicon">🎨</span> <span data-i18n="set.theme">Tema</span></span>
                 <div class="lang-switch" id="themeSwitch">
                     <button type="button" data-theme-btn="light" onclick="setTheme('light')" data-i18n="set.themeLight">⬜ Bianco</button>
                     <button type="button" data-theme-btn="dark" onclick="setTheme('dark')" data-i18n="set.themeDark">⬛ Nero</button>
@@ -375,8 +421,16 @@
                 </div>
             </div>
 
+            <div class="setting-row">
+                <span class="setting-label"><span class="gicon">🔕</span> <span data-i18n="set.dnd">Non disturbare</span></span>
+                <label class="switch">
+                    <input type="checkbox" id="dndToggle" onchange="toggleDnd(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div class="setting-row" id="folderRow" style="display:none;">
-                <span class="setting-label" data-i18n="set.folder">Cartella di salvataggio</span>
+                <span class="setting-label"><span class="gicon">📁</span> <span data-i18n="set.folder">Cartella di salvataggio</span></span>
                 <div class="setting-actions">
                     <span class="setting-value" id="folderValue" data-i18n="set.folderNone">Download (default)</span>
                     <button type="button" class="setting-btn" onclick="chooseSaveFolder()" data-i18n="set.choose">📁 Scegli</button>
@@ -385,13 +439,13 @@
             </div>
 
             <div class="setting-row" id="downloadsRow" style="display:none;">
-                <span class="setting-label" data-i18n="set.downloads">📥 Download</span>
+                <span class="setting-label"><span class="gicon">📥</span> <span data-i18n="set.downloads">Download</span></span>
                 <button type="button" class="setting-btn ghost" onclick="clearDownloads()" data-i18n="set.dlClear">Svuota</button>
             </div>
             <div id="downloadsList" class="dl-list" style="display:none;"></div>
 
             <div class="setting-row" data-newui="1">
-                <span class="setting-label" data-i18n="set.apps">🔄 App e aggiornamenti</span>
+                <span class="setting-label"><span class="gicon">🔄</span> <span data-i18n="set.apps">App e aggiornamenti</span></span>
                 <div class="setting-actions">
                     <button type="button" class="setting-btn" onclick="checkForUpdates(true)" data-i18n="btn.checkUpdatesShort">🔍 Controlla</button>
                 </div>
@@ -405,7 +459,49 @@
                 </div>
             </div>
         </div>
+        <button type="button" id="logoutBtn" class="logout-red" onclick="logout()" style="display:none;" data-i18n="auth.logout">ESCI</button>
     </section>
+
+    <!-- POPUP LOGIN/SIGNUP (solo username + password, accesso diretto) -->
+    <div id="authPopup" class="modal-overlay" style="display:none; z-index:2400;">
+        <div class="modal-card" style="max-width:380px; text-align:left;">
+            <div style="display:flex; justify-content:flex-end;">
+                <button type="button" onclick="closeAuthPopup()" aria-label="Chiudi" style="background:none; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:2px 6px;">✕</button>
+            </div>
+            <div id="popMain">
+                <div class="auth-tabs" style="margin-bottom:20px;">
+                    <button type="button" class="auth-tab active" id="popLoginTab" onclick="popToggle('login')">Login</button>
+                    <button type="button" class="auth-tab" id="popSignupTab" onclick="popToggle('signup')">Sign Up</button>
+                </div>
+                <form id="popFormLogin" class="auth-form">
+                    <h2 data-i18n="auth.welcome">Bentornato! 👋</h2>
+                    <label data-i18n="auth.username">Username</label><input type="text" id="popLoginUser" required autocomplete="username">
+                    <label data-i18n="auth.password">Password</label>
+                    <div class="pw-wrap">
+                        <input type="password" id="popLoginPass" required autocomplete="current-password">
+                        <button type="button" class="pw-eye" onclick="togglePw('popLoginPass', this)" title="Mostra/Nascondi password" aria-label="Mostra password">👁️</button>
+                    </div>
+                    <label style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:5px; cursor:pointer; margin-top:10px;">
+                        <input type="checkbox" id="rememberMe" checked style="accent-color:var(--accent);"> <span data-i18n="auth.remember">Remember Me</span>
+                    </label>
+                    <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="auth.loginBtn">ACCEDI</button>
+                </form>
+                <form id="popFormSignup" class="auth-form" style="display:none;">
+                    <h2 data-i18n="auth.signupTitle">Crea Account ✨</h2>
+                    <label data-i18n="auth.username">Username</label><input type="text" id="popSignupUser" required autocomplete="username">
+                    <label data-i18n="auth.password">Password</label>
+                    <div class="pw-wrap">
+                        <input type="password" id="popSignupPass" required autocomplete="new-password">
+                        <button type="button" class="pw-eye" onclick="togglePw('popSignupPass', this)" title="Mostra/Nascondi password" aria-label="Mostra password">👁️</button>
+                    </div>
+                    <label style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:5px; cursor:pointer; margin-top:10px;">
+                        <input type="checkbox" id="rememberMeSu" checked style="accent-color:var(--accent);"> <span data-i18n="auth.remember">Remember Me</span>
+                    </label>
+                    <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="auth.signupBtn">REGISTRATI</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- UPDATE POPUP -->
     <div id="update-popup" class="modal-overlay" style="display:none; z-index: 2000;">
@@ -455,8 +551,89 @@
         </div>
     </div>
 
+    <!-- MODAL: Modifica Profilo -->
+    <div id="editProfile-modal" class="modal-overlay" style="display:none; z-index: 2400;">
+        <div class="modal-card" style="max-width: 400px;">
+            <h3 style="margin: 0 0 20px 0; text-align:center;" data-i18n="profile.editTitle">Modifica Profilo</h3>
+            <form id="formEditProfile">
+                <label data-i18n="auth.username">Username</label>
+                <input type="text" id="editUsername" required class="glass-input center">
+                <button type="submit" class="btn-convert" style="width:100%;" data-i18n="common.save">Salva</button>
+            </form>
+            <button type="button" onclick="closeModal('editProfile-modal')" style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;" data-i18n="common.cancel">Annulla</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Cambia Password -->
+    <div id="changePass-modal" class="modal-overlay" style="display:none; z-index: 2400;">
+        <div class="modal-card" style="max-width: 400px;">
+            <h3 style="margin: 0 0 20px 0; text-align:center;" data-i18n="profile.changePassTitle">Cambia Password</h3>
+            <form id="formChangePass">
+                <label data-i18n="profile.oldPassword">Password attuale</label>
+                <div class="pw-wrap">
+                    <input type="password" id="oldPass" required class="glass-input">
+                    <button type="button" class="pw-eye" onclick="togglePw('oldPass', this)">👁️</button>
+                </div>
+                <label data-i18n="auth.newPassword">Nuova password</label>
+                <div class="pw-wrap">
+                    <input type="password" id="newPass" required class="glass-input">
+                    <button type="button" class="pw-eye" onclick="togglePw('newPass', this)">👁️</button>
+                </div>
+                <label data-i18n="auth.confirmPassword">Conferma nuova password</label>
+                <div class="pw-wrap">
+                    <input type="password" id="newPass2" required class="glass-input">
+                    <button type="button" class="pw-eye" onclick="togglePw('newPass2', this)">👁️</button>
+                </div>
+                <button type="submit" class="btn-convert" style="width:100%; margin-top:20px;" data-i18n="common.save">Salva</button>
+            </form>
+            <button type="button" onclick="closeModal('changePass-modal')" style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;" data-i18n="common.cancel">Annulla</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Elimina Account -->
+    <div id="deleteAccount-modal" class="modal-overlay" style="display:none; z-index: 2400;">
+        <div class="modal-card" style="max-width: 400px; border-color: #ef4444;">
+            <div style="text-align:center; margin-bottom:16px;">
+                <div style="font-size:48px; margin-bottom:10px;">⚠️</div>
+                <h3 style="margin: 0 0 10px 0; color:#ef4444;" data-i18n="profile.deleteTitle">Elimina Account</h3>
+                <p style="color:var(--text-muted); font-size:14px; margin:0;" data-i18n="profile.deleteWarning">Stai per eliminare il tuo account e tutti i dati associati. Questa azione è irreversibile.</p>
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;" data-i18n="profile.deleteConfirm">Per conferma, inserisci la tua password:</p>
+            <form id="formDeleteAccount">
+                <div class="pw-wrap">
+                    <input type="password" id="deletePass" required class="glass-input">
+                    <button type="button" class="pw-eye" onclick="togglePw('deletePass', this)">👁️</button>
+                </div>
+                <button type="submit" class="btn-convert" style="width:100%; margin-top:16px; background:#ef4444;" data-i18n="profile.deleteYes">Sì, elimina!</button>
+            </form>
+            <button type="button" onclick="closeModal('deleteAccount-modal')" style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;" data-i18n="profile.keepIt">No, tienilo</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Menu Profilo -->
+    <div id="profileMenu-modal" class="modal-overlay" style="display:none; z-index: 2400;">
+        <div class="modal-card" style="max-width:340px; text-align:left;">
+            <div style="display:flex; justify-content:flex-end;">
+                <button type="button" onclick="closeModal('profileMenu-modal')" aria-label="Chiudi" style="background:none; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:2px 6px;">✕</button>
+            </div>
+            <button type="button" class="pm-row" onclick="closeModal('profileMenu-modal'); showEditProfile();">✏️ <span data-i18n="profile.menuUsername">Cambia username</span></button>
+            <button type="button" class="pm-row" onclick="closeModal('profileMenu-modal'); showChangePassword();">🔒 <span data-i18n="profile.menuPassword">Cambia password</span></button>
+            <button type="button" class="pm-row danger" onclick="closeModal('profileMenu-modal'); showDeleteAccount();">🗑️ <span data-i18n="profile.menuDelete">Elimina account</span></button>
+        </div>
+    </div>
+
+    <!-- MODAL: Switch Account -->
+    <div id="switchAccount-modal" class="modal-overlay" style="display:none; z-index: 2400;">
+        <div class="modal-card" style="max-width: 400px;">
+            <h3 style="margin: 0 0 20px 0; text-align:center;" data-i18n="profile.switchTitle">Cambia Account</h3>
+            <p style="color:var(--text-muted); font-size:14px; text-align:center; margin-bottom:20px;" data-i18n="profile.switchWarning">Per cambiare account devi prima uscire da quello attuale. Potrai poi accedere con un altro account.</p>
+            <button class="btn-convert" style="width:100%;" onclick="logout(); closeModal('switchAccount-modal');" data-i18n="profile.logoutAndSwitch">Esci e cambia account</button>
+            <button type="button" onclick="closeModal('switchAccount-modal')" style="width:100%; background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;" data-i18n="common.cancel">Annulla</button>
+        </div>
+    </div>
+
 <script>
-    const CURRENT_VERSION = "6.1.1";
+    const CURRENT_VERSION = "6.2.0";
     const VERSION_URL = "version.json";
     // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
     const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
@@ -466,14 +643,14 @@
     // --- I18N (Italiano / English) ---
     const I18N = {
         it: {
-            "nav.home": "Home", "nav.img": "Img", "nav.video": "Video", "nav.audio": "Audio", "nav.pdf": "PDF", "nav.login": "Login",
+            "nav.home": "Home", "nav.img": "Img", "nav.video": "Video", "nav.audio": "Audio", "nav.pdf": "PDF", "nav.iso": "ISO", "nav.login": "Login",
             "home.title": "Studio Converter Suite",
             "home.subtitle": "Tutti i formati. Immagini, Video, Audio. Zero limiti.",
             "search.ph": "Cosa troviamo oggi?",
             "search.none": "Nessun risultato. Prova: img, video, audio, pdf, mp4...",
             "search.back": "← Tutti i formati",
             "home.support": "Ti è utile? Offrimi un caffè ☕",
-            "feat.img": "Immagini", "feat.video": "Video", "feat.audio": "Audio", "feat.pdf": "Convert to PDF",
+            "feat.img": "Immagini", "feat.video": "Video", "feat.audio": "Audio", "feat.pdf": "Convert to PDF", "feat.iso": "Convert to ISO",
             "btn.checkUpdates": "🔍 Controlla Aggiornamenti",
             "btn.checkUpdatesShort": "🔍 Controlla",
             "btn.desktopShort": "💻 Desktop",
@@ -489,6 +666,26 @@
             "video.h2": "Video Converter", "video.select": "Seleziona Video",
             "audio.h2": "Audio Converter", "audio.select": "Seleziona Audio",
             "pdf.h2": "Convert to PDF",
+            "iso.h2": "Convert to ISO",
+            "iso.select": "Seleziona un file immagine (.img)",
+            "iso.sub": "IMG o ISO — max 30 GB",
+            "iso.volName": "Nome volume",
+            "iso.detectedIso": "✅ File ISO9660 rilevato: verrà salvato con estensione .iso",
+            "iso.detectedWrap": "📦 File generico: creerò un nuovo disco ISO9660 che contiene il file",
+            "prog.isoWrap": "Creo l'immagine disco...",
+            "toast.isoBig": "File troppo grande: massimo 30 GB",
+            "prem.sub": "Il sito resta gratuito per tutti. Con Premium: file fino a 30GB e conversioni più veloci.",
+            "prem.perMonth": "/mese", "prem.perYear": "/anno", "prem.best": "2 mesi gratis",
+            "prem.buy": "⭐ Abbonati",
+            "prem.f1": "File fino a 30GB (vs 1GB gratuiti)", "prem.f2": "Conversioni più veloci",
+            "prem.have": "Hai già una licenza?", "prem.keyPh": "Codice licenza...", "prem.activate": "Attiva",
+            "prem.active": "⭐ Premium attivo", "prem.activeUntil": "Premium attivo fino al", "prem.activeOwner": "⭐ Premium PER SEMPRE",
+            "coupon.title": "🎟️ Coupon", "coupon.sub": "Usali al checkout per sconti esclusivi.",
+            "coupon.empty": "Nessun coupon attivo al momento", "coupon.copy": "Clicca per copiare",
+            "toast.premLimit": "File oltre 1GB: passa a Premium per 30GB",
+            "toast.premOk": "✅ Premium attivato!", "toast.premBad": "Codice non valido",
+            "toast.premExp": "Licenza scaduta", "toast.premKeyReq": "Inserisci il codice licenza",
+            "toast.copied": "Copiato!",
             "pdf.modeImg": "Immagini → PDF", "pdf.modeTxt": "Testo → PDF",
             "pdf.imgSelect": "Seleziona Immagini", "pdf.imgSub": "JPG, PNG, WEBP... più file insieme",
             "pdf.txtSelect": "Seleziona documento di testo",
@@ -508,6 +705,31 @@
             "auth.username": "Username", "auth.password": "Password",
             "auth.loginBtn": "ACCEDI", "auth.signupBtn": "REGISTRATI",
             "auth.account": "Account Pro Suite", "auth.logout": "ESCI",
+            "auth.loginLink": "Login", "auth.signupLink": "Sign Up",
+            "auth.welcomeTitle": "Benvenuto! 👋", "auth.welcomeSub": "Scegli come vuoi iniziare",
+            "auth.createAccount": "✨ Crea Account", "auth.signIn": "🔑 Accedi", "auth.continueGuest": "👤 Continua come Guest",
+            "auth.email": "Email", "auth.forgotPassword": "Password dimenticata?",
+            "auth.otpTitle": "Verifica la tua email", "auth.otpSub": "Ti abbiamo inviato un codice a 4 cifre",
+            "auth.verifyOtp": "Verifica", "auth.noEmail": "Non hai ricevuto l'email?", "auth.resend": "Reinvia",
+            "auth.remember": "Remember Me", "auth.otpTo": "Codice inviato a",
+            "auth.forgotTitle": "Password dimenticata", "auth.forgotSub": "Inserisci il tuo username per ricevere un link di reset",
+            "auth.sendReset": "Invia link di reset", "auth.backToLogin": "← Torna al login",
+            "auth.resetTitle": "Nuova password", "auth.resetSub": "Crea una nuova password per il tuo account",
+            "auth.newPassword": "Nuova password", "auth.confirmPassword": "Conferma password", "auth.savePassword": "Salva password",
+            "set.dnd": "Non disturbare",
+            "set.profile": "👤 Profilo", "set.editProfile": "✏️ Modifica",
+            "set.account": "🔄 Account", "set.switchAccount": "Cambia account", "set.logout": "Esci",
+            "set.changePassword": "Cambia password", "set.changePasswordBtn": "Cambia",
+            "set.deleteAccount": "Elimina account", "set.deleteAccountBtn": "Elimina",
+            "profile.editTitle": "Modifica Profilo", "profile.changePassTitle": "Cambia Password",
+            "profile.oldPassword": "Password attuale",
+            "profile.deleteTitle": "Elimina Account", "profile.deleteWarning": "Stai per eliminare il tuo account e tutti i dati associati. Questa azione è irreversibile.",
+            "profile.deleteConfirm": "Per conferma, inserisci la tua password:", "profile.deleteBtn": "Elimina definitivamente",
+            "profile.deleteYes": "Sì, elimina!", "profile.keepIt": "No, tienilo",
+            "profile.switchTitle": "Cambia Account", "profile.switchWarning": "Per cambiare account devi prima uscire da quello attuale. Potrai poi accedere con un altro account.",
+            "profile.logoutAndSwitch": "Esci e cambia account",
+            "profile.menuUsername": "Cambia username", "profile.menuPassword": "Cambia password", "profile.menuDelete": "Elimina account",
+            "common.save": "Salva", "common.cancel": "Annulla",
             "upd.title": "Nuova Versione Disponibile!",
             "upd.textPre": "È uscita la versione ", "upd.textPost": ".",
             "upd.now": "AGGIORNA ORA", "upd.later": "Più tardi",
@@ -519,6 +741,7 @@
             "toast.exists": "⚠️ Username già presente nel database",
             "toast.welcome": "✅ Bentornato, ",
             "toast.badLogin": "❌ Utente o password errati",
+            "toast.mailFail": "⚠️ Email non inviata",
             "toast.upToDate": "✅ Sei già all'ultima versione (",
             "toast.updError": "❌ Errore controllo aggiornamenti",
             "toast.updNewSite": "🔄 C'è un aggiornamento del sito (",
@@ -538,7 +761,7 @@
             "nav.settings": "Impostazioni",
             "set.title": "⚙️ Impostazioni",
             "set.lang": "Lingua",
-            "set.theme": "🎨 Tema",
+            "set.theme": "Tema",
             "set.themeLight": "⬜ Bianco",
             "set.themeDark": "⬛ Nero",
             "set.themeDefault": "🟣 Predefinito",
@@ -547,9 +770,9 @@
             "set.folderNone": "Download (default)",
             "set.folderLost": "⚠️ Cartella non valida più, scegli di nuovo",
             "set.choose": "📁 Scegli",
-            "set.downloads": "📥 Download",
+            "set.downloads": "Download",
             "set.dlClear": "Svuota",
-            "set.apps": "🔄 App e aggiornamenti",
+            "set.apps": "App e aggiornamenti",
             "set.appsDl": "⬇️ Scarica app",
             "set.dlEmpty": "Nessun file salvato ancora",
             "folder.picked": "✅ Cartella di salvataggio: ",
@@ -559,14 +782,14 @@
             "folder.saveError": "❌ Impossibile salvare nella cartella, salvo in Download"
         },
         en: {
-            "nav.home": "Home", "nav.img": "Images", "nav.video": "Video", "nav.audio": "Audio", "nav.pdf": "PDF", "nav.login": "Login",
+            "nav.home": "Home", "nav.img": "Images", "nav.video": "Video", "nav.audio": "Audio", "nav.pdf": "PDF", "nav.iso": "ISO", "nav.login": "Login",
             "home.title": "Studio Converter Suite",
             "home.subtitle": "Every format. Images, Video, Audio. No limits.",
             "search.ph": "What are we finding today?",
             "search.none": "No results. Try: img, video, audio, pdf, mp4...",
             "search.back": "← All formats",
             "home.support": "Find it useful? Buy me a coffee ☕",
-            "feat.img": "Images", "feat.video": "Video", "feat.audio": "Audio", "feat.pdf": "Convert to PDF",
+            "feat.img": "Images", "feat.video": "Video", "feat.audio": "Audio", "feat.pdf": "Convert to PDF", "feat.iso": "Convert to ISO",
             "btn.checkUpdates": "🔍 Check for Updates",
             "btn.checkUpdatesShort": "🔍 Check",
             "btn.desktopShort": "💻 Desktop",
@@ -582,6 +805,26 @@
             "video.h2": "Video Converter", "video.select": "Select Video",
             "audio.h2": "Audio Converter", "audio.select": "Select Audio",
             "pdf.h2": "Convert to PDF",
+            "iso.h2": "Convert to ISO",
+            "iso.select": "Select an image file (.img)",
+            "iso.sub": "IMG or ISO — max 30 GB",
+            "iso.volName": "Volume name",
+            "iso.detectedIso": "✅ ISO9660 file detected: it will be saved with .iso extension",
+            "iso.detectedWrap": "📦 Generic file: I'll create a new ISO9660 disk containing the file",
+            "prog.isoWrap": "Creating disk image...",
+            "toast.isoBig": "File too big: maximum 30 GB",
+            "prem.sub": "The site stays free for everyone. With Premium: files up to 30GB and faster conversions.",
+            "prem.perMonth": "/month", "prem.perYear": "/year", "prem.best": "2 months free",
+            "prem.buy": "⭐ Subscribe",
+            "prem.f1": "Files up to 30GB (vs 1GB free)", "prem.f2": "Faster conversions",
+            "prem.have": "Already have a license?", "prem.keyPh": "License key...", "prem.activate": "Activate",
+            "prem.active": "⭐ Premium active", "prem.activeUntil": "Premium active until", "prem.activeOwner": "⭐ Premium FOREVER",
+            "coupon.title": "🎟️ Coupons", "coupon.sub": "Use them at checkout for exclusive discounts.",
+            "coupon.empty": "No active coupons right now", "coupon.copy": "Click to copy",
+            "toast.premLimit": "File over 1GB: go Premium for 30GB",
+            "toast.premOk": "✅ Premium activated!", "toast.premBad": "Invalid code",
+            "toast.premExp": "License expired", "toast.premKeyReq": "Enter the license key",
+            "toast.copied": "Copied!",
             "pdf.modeImg": "Images → PDF", "pdf.modeTxt": "Text → PDF",
             "pdf.imgSelect": "Select Images", "pdf.imgSub": "JPG, PNG, WEBP... multiple files",
             "pdf.txtSelect": "Select text document",
@@ -601,6 +844,31 @@
             "auth.username": "Username", "auth.password": "Password",
             "auth.loginBtn": "LOG IN", "auth.signupBtn": "SIGN UP",
             "auth.account": "Pro Suite Account", "auth.logout": "LOG OUT",
+            "auth.loginLink": "Login", "auth.signupLink": "Sign Up",
+            "auth.welcomeTitle": "Welcome! 👋", "auth.welcomeSub": "Choose how you want to start",
+            "auth.createAccount": "✨ Create Account", "auth.signIn": "🔑 Sign In", "auth.continueGuest": "👤 Continue as Guest",
+            "auth.email": "Email", "auth.forgotPassword": "Forgot password?",
+            "auth.otpTitle": "Verify your email", "auth.otpSub": "We sent you a 4-digit code",
+            "auth.verifyOtp": "Verify", "auth.noEmail": "Didn't receive the email?", "auth.resend": "Resend",
+            "auth.remember": "Remember Me", "auth.otpTo": "Code sent to",
+            "auth.forgotTitle": "Forgot password", "auth.forgotSub": "Enter your username to receive a reset link",
+            "auth.sendReset": "Send reset link", "auth.backToLogin": "← Back to login",
+            "auth.resetTitle": "New password", "auth.resetSub": "Create a new password for your account",
+            "auth.newPassword": "New password", "auth.confirmPassword": "Confirm password", "auth.savePassword": "Save password",
+            "set.dnd": "Do not disturb",
+            "set.profile": "👤 Profile", "set.editProfile": "✏️ Edit",
+            "set.account": "🔄 Account", "set.switchAccount": "Switch account", "set.logout": "Log out",
+            "set.changePassword": "Change password", "set.changePasswordBtn": "Change",
+            "set.deleteAccount": "Delete account", "set.deleteAccountBtn": "Delete",
+            "profile.editTitle": "Edit Profile", "profile.changePassTitle": "Change Password",
+            "profile.oldPassword": "Current password",
+            "profile.deleteTitle": "Delete Account", "profile.deleteWarning": "You're about to delete your account and all associated data. This action is irreversible.",
+            "profile.deleteConfirm": "To confirm, enter your password:", "profile.deleteBtn": "Delete permanently",
+            "profile.deleteYes": "Yes, Delete!", "profile.keepIt": "No, keep it.",
+            "profile.switchTitle": "Switch Account", "profile.switchWarning": "To switch accounts you must first log out of your current one. You can then sign in with another account.",
+            "profile.logoutAndSwitch": "Log out and switch account",
+            "profile.menuUsername": "Change username", "profile.menuPassword": "Change password", "profile.menuDelete": "Delete account",
+            "common.save": "Save", "common.cancel": "Cancel",
             "upd.title": "New Version Available!",
             "upd.textPre": "Version ", "upd.textPost": " is out.",
             "upd.now": "UPDATE NOW", "upd.later": "Later",
@@ -612,6 +880,7 @@
             "toast.exists": "⚠️ Username already exists in the database",
             "toast.welcome": "✅ Welcome back, ",
             "toast.badLogin": "❌ Wrong username or password",
+            "toast.mailFail": "⚠️ Email not sent",
             "toast.upToDate": "✅ You already have the latest version (",
             "toast.updError": "❌ Error checking for updates",
             "toast.updNewSite": "🔄 Site update available (",
@@ -631,7 +900,7 @@
             "nav.settings": "Settings",
             "set.title": "⚙️ Settings",
             "set.lang": "Language",
-            "set.theme": "🎨 Theme",
+            "set.theme": "Theme",
             "set.themeLight": "⬜ White",
             "set.themeDark": "⬛ Black",
             "set.themeDefault": "🟣 Default",
@@ -640,9 +909,9 @@
             "set.folderNone": "Downloads (default)",
             "set.folderLost": "⚠️ Folder no longer valid, choose it again",
             "set.choose": "📁 Choose",
-            "set.downloads": "📥 Downloads",
+            "set.downloads": "Downloads",
             "set.dlClear": "Clear",
-            "set.apps": "🔄 Apps & Updates",
+            "set.apps": "Apps & Updates",
             "set.appsDl": "⬇️ Download apps",
             "set.dlEmpty": "No files saved yet",
             "folder.picked": "✅ Save folder: ",
@@ -661,6 +930,14 @@
         return (key in d) ? d[key] : ((key in I18N.it) ? I18N.it[key] : key);
     }
 
+    const PREM_CHECKOUT_M = 'https://TUO-STORE.lemonsqueezy.com/checkout/buy/1428572';
+    const PREM_CHECKOUT_Y = 'https://TUO-STORE.lemonsqueezy.com/checkout/buy/1428581';
+    const PREM_API = 'https://studioconverterpro.pages.dev/premium';
+    const PREM_FREE_MAX = 1024 * 1024 * 1024;
+    const COUPONS = [
+        // Esempio: { code: 'BENVENUTO10', it: '-10% sul primo mese', en: '10% off first month' }
+    ];
+
     function applyLang() {
         document.documentElement.lang = LANG;
         const bIt = document.getElementById('setLangIt');
@@ -676,6 +953,8 @@
         const pl = document.getElementById('privacyLink');
         if (pl) pl.setAttribute('href', LANG === 'en' ? 'privacy-en.html' : 'privacy.html');
         if (typeof renderNews === 'function') renderNews();
+        if (typeof premRenderCoupons === 'function') premRenderCoupons();
+        if (typeof premRenderStatus === 'function') premRenderStatus();
         if (typeof updateAuthUI === 'function') updateAuthUI();
         if (typeof refreshFolderUI === 'function') refreshFolderUI();
         localStorage.setItem('lang', LANG);
@@ -713,6 +992,20 @@
     applyTheme(themePref());
 
     const NEWS = [
+        { version: "6.2.0", date: "2026-10-14", items: {
+            it: [
+                "👤 Nuovo accesso: Login e Registrazione veloci nelle Impostazioni (solo username e password)",
+                "⭐ Badge PRO sul profilo e pulsante di logout rosso",
+                "🔕 Non disturbare: blocca davvero popup e notifiche",
+                "✨ Icone liquid glass in tutta l'app"
+            ],
+            en: [
+                "👤 New sign-in: fast Login and Sign Up in Settings (username and password only)",
+                "⭐ PRO badge on profile and red logout button",
+                "🔕 Do not disturb: really blocks popups and notifications",
+                "✨ Liquid glass icons across the app"
+            ]
+        }},
         { version: "6.1.1", date: "2026-10-05", items: {
             it: [
                 "🔍 Ricerca a tema: barra bianca, nera o predefinita come lo sfondo",
@@ -961,6 +1254,7 @@
     function maybeShowWhatsNew() {
         try {
             if (!inApp()) return;
+            if (dndOn()) return;
             var seen = null;
             try { seen = localStorage.getItem('newsSeen'); } catch (e) { }
             if (seen === CURRENT_VERSION) return;
@@ -984,6 +1278,7 @@
     }
 
     function switchTab(t) {
+        if (t === 'iso') return; // sezione ISO nascosta
         if (typeof exitFocus === 'function') exitFocus();
         document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
@@ -991,27 +1286,73 @@
         document.getElementById('nav-'+t).classList.add('active');
         if(window.innerWidth <= 768) window.scrollTo(0,0);
     }
-    function toggleAuth(t) {
-        document.getElementById('formLogin').style.display = t==='login'?'block':'none';
-        document.getElementById('formSignup').style.display = t==='signup'?'block':'none';
-        document.getElementById('btnLoginTab').classList.toggle('active', t==='login');
-        document.getElementById('btnSignupTab').classList.toggle('active', t==='signup');
+    function curUser() { try { return localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser'); } catch (e) { return null; } }
+    function setUser(u) {
+        try {
+            let rem = null;
+            const lf = document.getElementById('popFormLogin');
+            if (lf && lf.style.display !== 'none') rem = document.getElementById('rememberMe');
+            else { const sf = document.getElementById('popFormSignup'); if (sf && sf.style.display !== 'none') rem = document.getElementById('rememberMeSu'); }
+            if (!rem) {
+                try { if (sessionStorage.getItem('loggedInUser')) { sessionStorage.setItem('loggedInUser', u); return; } } catch (e) { }
+                localStorage.setItem('loggedInUser', u); return;
+            }
+            if (!rem.checked) { sessionStorage.setItem('loggedInUser', u); localStorage.removeItem('loggedInUser'); }
+            else { localStorage.setItem('loggedInUser', u); sessionStorage.removeItem('loggedInUser'); }
+        } catch (e) { try { localStorage.setItem('loggedInUser', u); } catch (e2) { } }
     }
+    function openProfileMenu() {
+        document.getElementById('profileMenu-modal').style.display = 'flex';
+    }
+    function showEditProfile() {
+        const u = localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser') || '';
+        document.getElementById('editUsername').value = u;
+        document.getElementById('editProfile-modal').style.display = 'flex';
+    }
+    function showChangePassword() {
+        document.getElementById('changePass-modal').style.display = 'flex';
+    }
+    function showDeleteAccount() {
+        document.getElementById('deleteAccount-modal').style.display = 'flex';
+    }
+    function switchAccount() {
+        document.getElementById('switchAccount-modal').style.display = 'flex';
+    }
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+    function toggleDnd(enabled) {
+        localStorage.setItem('dnd', enabled ? '1' : '0');
+        showToast(enabled ? 'Non disturbare attivato' : 'Non disturbare disattivato');
+    }
+    function dndOn() { try { return localStorage.getItem('dnd') === '1'; } catch (e) { return false; } }
     function updateAuthUI() {
-        const u = localStorage.getItem('loggedInUser');
-        if(u) {
-            document.getElementById('authFormsContainer').style.display='none';
-            document.getElementById('profileContainer').style.display='block';
-            document.getElementById('authLabel').textContent=u;
-            document.getElementById('profileName').textContent=u;
-            document.getElementById('profileAvatar').textContent=u.charAt(0).toUpperCase();
+        const u = curUser();
+        const show = id => { const e = document.getElementById(id); if (e) e.style.display = 'block'; };
+        const hide = id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; };
+        show('profileSettings');
+        const lb = document.getElementById('logoutBtn');
+        if (u) {
+            show('pcLoggedIn'); hide('pcLoggedOut');
+            document.getElementById('pcName').textContent = u;
+            document.getElementById('pcAvatar').textContent = (u.charAt(0) || 'U').toUpperCase();
+            const em = localStorage.getItem('user_email_' + u) || '';
+            const emEl = document.getElementById('pcEmail');
+            if (emEl) { emEl.style.display = em ? 'block' : 'none'; emEl.textContent = em; }
+            if (lb) lb.style.display = 'block';
         } else {
-            document.getElementById('authFormsContainer').style.display='block';
-            document.getElementById('profileContainer').style.display='none';
-            document.getElementById('authLabel').textContent=t('nav.login');
+            show('pcLoggedOut'); hide('pcLoggedIn');
+            if (lb) lb.style.display = 'none';
         }
+        try { document.getElementById('dndToggle').checked = localStorage.getItem('dnd') === '1'; } catch (e) { }
     }
-    function logout() { saveProfile(); localStorage.removeItem('loggedInUser'); updateAuthUI(); }
+    function logout() {
+        saveProfile();
+        try { localStorage.removeItem('loggedInUser'); sessionStorage.removeItem('loggedInUser'); } catch (e) { }
+        localStorage.setItem('authDone', '1');
+        updateAuthUI();
+        showToast('Sei uscito dall\'account');
+    }
     async function hashText(text) {
         if (window.crypto && crypto.subtle) {
             const buf = new TextEncoder().encode(text);
@@ -1020,24 +1361,23 @@
         }
         return text;
     }
-    // --- DATABASE CREDENZIALI CONDIVISO (Cloudflare Pages Function) ---
-    // Ogni nuova registrazione viene salvata nel database: lo stesso account
-    // funziona su PC, telefono e app. Se il database non risponde si resta su locale.
     const CRED_FN = [inApp() ? SITE_ORIGIN + '/credentials' : '/credentials'];
     let credFnOk = null;
-    async function remoteCreds(action, u, p) {
+    async function remoteCreds(action, u, p, extra) {
         const tries = credFnOk ? [credFnOk] : CRED_FN;
         for (const path of tries) {
             try {
+                const body = { action: action, u: u, p: p };
+                if (extra) Object.assign(body, extra);
                 const r = await fetch(path, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: action, u: u, p: p })
+                    body: JSON.stringify(body)
                 });
-                if (r.status === 404) continue; // host sbagliato: proviamo l'altro
+                if (r.status === 404) continue;
                 let j = null;
-                try { j = await r.json(); } catch (e) { continue; } // non è JSON: host sbagliato
-                if (j && j.error === 'server') { credFnOk = null; window.credFnOk = null; continue; } // function ok, database non disponibile
+                try { j = await r.json(); } catch (e) { continue; }
+                if (j && j.error === 'server') { credFnOk = null; window.credFnOk = null; continue; }
                 credFnOk = path; window.credFnOk = path;
                 return j;
             } catch (e) { }
@@ -1053,7 +1393,6 @@
         }
         return null;
     }
-    // Restituisce l'username canonico se le credenziali sono valide, altrimenti null
     async function checkPassword(u, p) {
         const h = await hashText(p);
         const remote = await remoteCreds('login', u, p);
@@ -1076,38 +1415,107 @@
         btn.textContent = show ? '🙈' : '👁️';
         btn.setAttribute('aria-pressed', show ? 'true' : 'false');
     }
-
-    document.getElementById('formSignup').onsubmit = async e => {
+    let popMode = 'login';
+    function openAuthPopup(mode) {
+        popToggle(mode === 'signup' ? 'signup' : 'login');
+        document.getElementById('authPopup').style.display = 'flex';
+    }
+    function closeAuthPopup() {
+        document.getElementById('authPopup').style.display = 'none';
+    }
+    function popToggle(mmode) {
+        popMode = mmode;
+        document.getElementById('popFormLogin').style.display = mmode === 'login' ? 'block' : 'none';
+        document.getElementById('popFormSignup').style.display = mmode === 'signup' ? 'block' : 'none';
+        document.getElementById('popLoginTab').classList.toggle('active', mmode === 'login');
+        document.getElementById('popSignupTab').classList.toggle('active', mmode === 'signup');
+    }
+    async function finishPopLogin(user) {
+        setUser(user);
+        localStorage.setItem('authDone', '1');
+        try { await applyProfile(); } catch (e) { }
+        updateAuthUI();
+        closeAuthPopup();
+        showToast(t('toast.welcome') + user + '!');
+    }
+    document.getElementById('popFormSignup').onsubmit = async e => {
         e.preventDefault();
-        const u = document.getElementById('signupUser').value.trim();
-        const p = document.getElementById('signupPass').value;
+        const u = document.getElementById('popSignupUser').value.trim();
+        const p = document.getElementById('popSignupPass').value;
         const h = await hashText(p);
         const r = await remoteCreds('signup', u, p);
-        if (r && r.ok === false && r.error === 'exists') {
-            showToast(t('toast.exists'));
-            return;
-        }
+        if (r && r.ok === false && r.error === 'exists') { showToast(t('toast.exists')); return; }
         if (r && r.ok) {
             try { localStorage.setItem('user_' + (r.user || u), h); } catch (e) { }
             showToast(t('toast.createdDb'));
+            finishPopLogin(r.user || u);
+        } else if (r && r.ok === false) {
+            showToast(t('toast.error') + (r.error || ''));
         } else {
-            localStorage.setItem('user_' + u, h);
+            try { localStorage.setItem('user_' + u, h); } catch (e) { }
             showToast(t('toast.createdLocal'));
+            finishPopLogin(u);
         }
-        toggleAuth('login');
     };
-    document.getElementById('formLogin').onsubmit = async e => {
+    document.getElementById('popFormLogin').onsubmit = async e => {
         e.preventDefault();
-        const u = document.getElementById('loginUser').value.trim();
-        const p = document.getElementById('loginPass').value;
+        const u = document.getElementById('popLoginUser').value.trim();
+        const p = document.getElementById('popLoginPass').value;
+        const r = await remoteCreds('login', u, p);
+        if (r && r.ok) {
+            try { localStorage.setItem('user_' + r.user, await hashText(p)); } catch (e) { }
+            finishPopLogin(r.user || u);
+            return;
+        }
         const user = await checkPassword(u, p);
-        if (user) {
-            localStorage.setItem('loggedInUser', user);
-            await applyProfile();
+        if (user) { finishPopLogin(user); }
+        else { showToast(t('toast.badLogin')); }
+    };
+    document.getElementById('formEditProfile').onsubmit = async e => {
+        e.preventDefault();
+        const u = localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser') || '';
+        const newU = document.getElementById('editUsername').value.trim();
+        const p = prompt('Inserisci la tua password per confermare:');
+        if (!p) return;
+        const r = await remoteCreds('updateUsername', u, p, { newU: newU });
+        if (r && r.ok) {
+            setUser(r.user);
             updateAuthUI();
-            showToast(t('toast.welcome') + user + '!');
+            closeModal('editProfile-modal');
+            showToast('Username aggiornato!');
         } else {
-            showToast(t('toast.badLogin'));
+            showToast('Errore. Password errata o username non valido.');
+        }
+    };
+    document.getElementById('formChangePass').onsubmit = async e => {
+        e.preventDefault();
+        const u = localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser') || '';
+        const oldP = document.getElementById('oldPass').value;
+        const newP = document.getElementById('newPass').value;
+        const newP2 = document.getElementById('newPass2').value;
+        if (newP !== newP2) { showToast('Le password non coincidono'); return; }
+        const r = await remoteCreds('updatePassword', u, oldP, { newPass: newP });
+        if (r && r.ok) {
+            closeModal('changePass-modal');
+            showToast('Password aggiornata!');
+        } else {
+            showToast('Password attuale errata');
+        }
+    };
+    document.getElementById('formDeleteAccount').onsubmit = async e => {
+        e.preventDefault();
+        const u = localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser') || '';
+        const p = document.getElementById('deletePass').value;
+        const r = await remoteCreds('deleteAccount', u, p);
+        if (r && r.ok) {
+            try { localStorage.removeItem('loggedInUser'); sessionStorage.removeItem('loggedInUser'); } catch (e) { }
+            localStorage.removeItem('user_' + u);
+            localStorage.setItem('authDone', '1');
+            closeModal('deleteAccount-modal');
+            updateAuthUI();
+            showToast('Account eliminato');
+        } else {
+            showToast('Password errata');
         }
     };
     updateAuthUI();
@@ -1183,6 +1591,7 @@
     function maybeAskNotif() {
         try {
             if (!inApp() || notifAsked()) return false;
+            if (dndOn()) return false;
             if (!window.cordova) return false;
             const fm = (cordova.plugins && cordova.plugins.firebase && cordova.plugins.firebase.messaging);
             if (!fm || typeof fm.requestPermission !== 'function') return false;
@@ -1237,7 +1646,7 @@
                 document.getElementById('upd-current-ver').textContent = appVer || data.apk_from || '5.2.4';
                 resetUpdateUi();
                 if (isApp && localStorage.getItem('updPending') === '1') showHomeUpdBtn(true);
-                document.getElementById('update-popup').style.display = 'flex';
+                if (!dndOn()) document.getElementById('update-popup').style.display = 'flex';
             } else {
                 showHomeUpdBtn(false);
                 if (manual) {
@@ -1350,7 +1759,7 @@
     function blobToBase64(b) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.readAsDataURL(b); }); }
 
     // --- PROFILO UTENTE: lingua, cartella e download salvati sul profilo ---
-    function currentUser() { try { return localStorage.getItem('loggedInUser'); } catch (e) { return null; } }
+    function currentUser() { try { return localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser'); } catch (e) { return null; } }
     function profileKey(u) { return 'prof_' + u; }
     function dirKey(u) { return 'saveDirHandle' + (u ? '#' + u : ''); }
     function getProfile(u) { try { return u ? JSON.parse(localStorage.getItem(profileKey(u)) || 'null') : null; } catch (e) { return null; } }
@@ -1808,7 +2217,7 @@
     function readBytes(file){ if(file.arrayBuffer) return file.arrayBuffer().then(b=>new Uint8Array(b)); return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(new Uint8Array(r.result)); r.onerror=()=>rej(r.error); r.readAsArrayBuffer(file); }); }
     document.getElementById('qualityRange').oninput=e=>document.getElementById('qualityValue').textContent=e.target.value;
     dzImg.onclick=()=>{if(!imgF)fImg.click()};
-    fImg.onchange=e=>{ if(!e.target.files[0])return; if(!okFile(e.target.files[0],'img')){showToast(t('toast.badFile')); e.target.value=''; return;} imgF=e.target.files[0]; imgBytes=null;
+    fImg.onchange=e=>{ if(!e.target.files[0])return; if(!okFile(e.target.files[0],'img')){showToast(t('toast.badFile')); e.target.value=''; return;} if(!premLimitOk(e.target.files[0])){e.target.value=''; return;} imgF=e.target.files[0]; imgBytes=null;
         if(imgObjUrl){URL.revokeObjectURL(imgObjUrl); imgObjUrl=null;}
         imgObjUrl=URL.createObjectURL(imgF);
         pImg.onload=()=>{oW=pImg.naturalWidth;oH=pImg.naturalHeight};
@@ -1859,7 +2268,7 @@
         const dz=document.getElementById('dz-audio'), inp=document.getElementById('fileInput-audio'), opt=document.getElementById('optionsPanel-audio');
         let cur=null;
         dz.onclick=()=>{if(!cur)inp.click()};
-        inp.onchange=e=>{if(e.target.files[0]){if(!okFile(e.target.files[0],'audio')){showToast(t('toast.badFile')); e.target.value=''; return;} cur=e.target.files[0];document.getElementById('dzIcon-audio').style.display='none';document.getElementById('dzTitle-audio').textContent=cur.name;document.getElementById('dzTitle-audio').setAttribute('data-custom','');opt.style.opacity=1;opt.style.pointerEvents='auto';document.getElementById('resetBtn-audio').disabled=false;document.getElementById('convertBtn-audio').disabled=false}};
+        inp.onchange=e=>{if(e.target.files[0]){if(!okFile(e.target.files[0],'audio')){showToast(t('toast.badFile')); e.target.value=''; return;} if(!premLimitOk(e.target.files[0])){e.target.value=''; return;} cur=e.target.files[0];document.getElementById('dzIcon-audio').style.display='none';document.getElementById('dzTitle-audio').textContent=cur.name;document.getElementById('dzTitle-audio').setAttribute('data-custom','');opt.style.opacity=1;opt.style.pointerEvents='auto';document.getElementById('resetBtn-audio').disabled=false;document.getElementById('convertBtn-audio').disabled=false}};
         document.getElementById('resetBtn-audio').onclick=()=>{cur=null;inp.value='';document.getElementById('dzIcon-audio').style.display='block';document.getElementById('dzTitle-audio').textContent=t('audio.select');document.getElementById('dzTitle-audio').removeAttribute('data-custom');opt.style.opacity=0.5;opt.style.pointerEvents='none';document.getElementById('resetBtn-audio').disabled=true;document.getElementById('convertBtn-audio').disabled=true;document.getElementById('progress-container-audio').style.display='none'};
         document.getElementById('convertBtn-audio').onclick=async()=>{
             if(!cur)return;
@@ -1904,7 +2313,7 @@
         const dz=document.getElementById('dz-video'), inp=document.getElementById('fileInput-video'), opt=document.getElementById('optionsPanel-video');
         let cur=null;
         dz.onclick=()=>{if(!cur)inp.click()};
-        inp.onchange=e=>{if(e.target.files[0]){if(!okFile(e.target.files[0],'video')){showToast(t('toast.badFile')); e.target.value=''; return;} cur=e.target.files[0];document.getElementById('dzIcon-video').style.display='none';document.getElementById('dzTitle-video').textContent=cur.name;document.getElementById('dzTitle-video').setAttribute('data-custom','');opt.style.opacity=1;opt.style.pointerEvents='auto';document.getElementById('resetBtn-video').disabled=false;document.getElementById('convertBtn-video').disabled=false}};
+        inp.onchange=e=>{if(e.target.files[0]){if(!okFile(e.target.files[0],'video')){showToast(t('toast.badFile')); e.target.value=''; return;} if(!premLimitOk(e.target.files[0])){e.target.value=''; return;} cur=e.target.files[0];document.getElementById('dzIcon-video').style.display='none';document.getElementById('dzTitle-video').textContent=cur.name;document.getElementById('dzTitle-video').setAttribute('data-custom','');opt.style.opacity=1;opt.style.pointerEvents='auto';document.getElementById('resetBtn-video').disabled=false;document.getElementById('convertBtn-video').disabled=false}};
         document.getElementById('resetBtn-video').onclick=()=>{cur=null;inp.value='';document.getElementById('dzIcon-video').style.display='block';document.getElementById('dzTitle-video').textContent=t('video.select');document.getElementById('dzTitle-video').removeAttribute('data-custom');opt.style.opacity=0.5;opt.style.pointerEvents='none';document.getElementById('resetBtn-video').disabled=true;document.getElementById('convertBtn-video').disabled=true;document.getElementById('progress-container-video').style.display='none';document.getElementById('audioFormatContainer-video').style.display='none'};
         document.getElementById('formatSelect-video').onchange=e=>{
             document.getElementById('audioFormatContainer-video').style.display=e.target.value==='audio-extract'?'block':'none';
@@ -1972,6 +2381,7 @@
         if (kind === 'video') return ty.indexOf('video/') === 0 || /\.(mp4|webm|mov|mkv|avi|3gp|m4v|wmv|flv|mpg|mpeg|ogv|ts)$/.test(nm);
         if (kind === 'audio') return ty.indexOf('audio/') === 0 || ty === 'application/ogg' || /\.(mp3|wav|ogg|oga|flac|m4a|aac|opus|wma|aiff?|amr)$/.test(nm);
         if (kind === 'txt') return ty.indexOf('text/') === 0 || /\.(txt|md|csv|log|json|xml|rtf|srt|ini|yml|yaml|js|ts|css|html?|php|py|java|c|cpp|h|cs|sh|bat|ps1|toml|cfg|conf|markdown|text)$/.test(nm);
+        if (kind === 'iso') return /\.(img|iso)$/.test(nm) || ty === 'application/x-iso9660-image';
         return false;
     }
     function pdfMode(m) {
@@ -2088,8 +2498,8 @@
             document.getElementById('convertBtn-pdfimg').disabled = false;
         }
         function addFiles(fl) {
-            let bad = 0;
-            Array.prototype.forEach.call(fl, f => { if (okFile(f, 'img')) files.push(f); else bad++; });
+            let bad = 0, big = 0;
+            Array.prototype.forEach.call(fl, f => { if (okFile(f, 'img')) { if (premLimitOk(f)) files.push(f); else big++; } else bad++; });
             if (bad) showToast(t('toast.badFile'));
             if (files.length) renderThumbs();
         }
@@ -2225,7 +2635,7 @@
             finally { btn.disabled = false; btn.removeAttribute('data-custom'); btn.textContent = t('common.convert'); }
         };
     }
-    setupAudio(); setupVideo(); setupPdf();
+    setupAudio(); setupVideo(); setupPdf(); setupIso();
     applyLang();
     initSaveFolder();
     window.addEventListener('resize', () => { clearTimeout(window.__dlRT); window.__dlRT = setTimeout(initDownloads, 250); });
@@ -2251,8 +2661,278 @@
         }, 1000);
     })();
 
+    // ===== CONVERT TO ISO (solo sito) =====
+    function setupIso() {
+        const ISO_SEC = 2048;
+        const MAX_B = 30 * 1024 * 1024 * 1024;
+        const ROOT_LBA = 20, PT_LBA = 18, PTM_LBA = 19, FILE_LBA = 21;
+        const dz = document.getElementById('dz-iso'), inp = document.getElementById('fileInput-iso'), opt = document.getElementById('optionsPanel-iso');
+        let file = null, detected = null;
+
+        function info(msg) {
+            const el = document.getElementById('isoInfo');
+            el.textContent = msg || '';
+            el.style.display = msg ? 'block' : 'none';
+        }
+        function u32(v) { return [v >>> 24 & 255, v >>> 16 & 255, v >>> 8 & 255, v & 255]; }
+        function u32le(v) { return [v & 255, v >>> 8 & 255, v >>> 16 & 255, v >>> 24 & 255]; }
+
+        function isoDate(d) {
+            const p = (x, l) => String(x).padStart(l, '0');
+            const s = p(d.getUTCFullYear(), 4) + p(d.getUTCMonth() + 1, 2) + p(d.getUTCDate(), 2) +
+                p(d.getUTCHours(), 2) + p(d.getUTCMinutes(), 2) + p(d.getUTCSeconds(), 2) +
+                p(Math.floor(d.getUTCMilliseconds() / 10), 2);
+            const o = new Uint8Array(17);
+            for (let i = 0; i < 16; i++) o[i] = s.charCodeAt(i);
+            return o;
+        }
+
+        function dirDate(d) {
+            return [d.getUTCFullYear() - 1900, d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds(), 0];
+        }
+
+        function dirRec(idBytes, extent, size, flags, date) {
+            const n = idBytes.length;
+            let len = 33 + n; if (len % 2) len++;
+            const r = new Uint8Array(len);
+            r[0] = len; r[1] = 0;
+            r.set(u32le(extent), 2); r.set(u32(extent), 6);
+            r.set(u32le(size), 10); r.set(u32(size), 14);
+            r.set(dirDate(date), 18);
+            r[25] = flags; r[26] = 0; r[27] = 0;
+            r[28] = 1; r[29] = 0; r[30] = 0; r[31] = 1;
+            r[32] = n;
+            r.set(idBytes, 33);
+            return r;
+        }
+
+        function isoIdent(name) {
+            let base = String(name || 'file').replace(/\.[^.]+$/, '').toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+            if (!base) base = 'FILE';
+            const m = /\.([^.]+)$/.exec(String(name || ''));
+            let ext = '';
+            if (m) ext = '.' + m[1].toUpperCase().replace(/[^A-Z0-9_]/g, '_').slice(0, 8);
+            const max = 31 - 2 - ext.length;
+            if (base.length > max) base = base.slice(0, Math.max(1, max));
+            return base + ext + ';1';
+        }
+
+        async function detectIso() {
+            if (file.size >= 32774) {
+                const a = new Uint8Array(await file.slice(32768, 32774).arrayBuffer());
+                if (a[1] === 67 && a[2] === 68 && a[3] === 48 && a[4] === 48 && a[5] === 49) return true;
+            }
+            if (file.size >= 8198) {
+                const a = new Uint8Array(await file.slice(8192, 8198).arrayBuffer());
+                if (a[1] === 67 && a[2] === 68 && a[3] === 48 && a[4] === 48 && a[5] === 49) return true;
+            }
+            return false;
+        }
+
+        function buildHeader(volId, ident, fSize, date) {
+            const totalLba = FILE_LBA + Math.ceil(fSize / ISO_SEC);
+            const pvd = new Uint8Array(ISO_SEC);
+            pvd[0] = 1;
+            pvd.set([67, 68, 48, 48, 49], 1);
+            pvd[6] = 1;
+            pvd.fill(32, 8, 40);
+            pvd.fill(32, 40, 72);
+            const vb = new TextEncoder().encode(String(volId || 'ISO_IMAGE').toUpperCase().replace(/[^\x20-\x7E]/g, '_'));
+            pvd.set(vb.slice(0, 32), 40);
+            pvd.set(u32le(totalLba), 80); pvd.set(u32(totalLba), 84);
+            pvd.set([1, 0, 0, 1], 120);
+            pvd.set([1, 0, 0, 1], 124);
+            pvd.set([0, 8, 8, 0], 128);
+            pvd.set(u32le(10), 132); pvd.set(u32(10), 136);
+            pvd.set(u32le(PT_LBA), 140);
+            pvd.set(u32(PTM_LBA), 148);
+            pvd.set(dirRec(new Uint8Array([0]), ROOT_LBA, ISO_SEC, 0x02, date), 156);
+            pvd.fill(32, 190, 813);
+            pvd.set(isoDate(date), 813);
+            pvd.set(isoDate(date), 830);
+            pvd[881] = 1;
+
+            const term = new Uint8Array(ISO_SEC);
+            term[0] = 255;
+            term.set([67, 68, 48, 48, 49], 1);
+            term[6] = 1;
+
+            const pt = new Uint8Array(ISO_SEC);
+            pt[0] = 1; pt[1] = 0;
+            pt.set(u32le(ROOT_LBA), 2);
+            pt[6] = 1; pt[7] = 0; pt[8] = 0;
+
+            const ptm = new Uint8Array(ISO_SEC);
+            ptm[0] = 1; ptm[1] = 0;
+            ptm.set(u32(ROOT_LBA), 2);
+            ptm[6] = 0; ptm[7] = 1; ptm[8] = 0;
+
+            const root = new Uint8Array(ISO_SEC);
+            const dot = dirRec(new Uint8Array([0]), ROOT_LBA, ISO_SEC, 0x02, date);
+            const dotdot = dirRec(new Uint8Array([1]), ROOT_LBA, ISO_SEC, 0x02, date);
+            const fent = dirRec(new TextEncoder().encode(ident), FILE_LBA, fSize, 0x00, date);
+            let off = 0;
+            root.set(dot, off); off += dot.length;
+            root.set(dotdot, off); off += dotdot.length;
+            root.set(fent, off);
+
+            const head = new Uint8Array(32768 + 5 * ISO_SEC);
+            head.set(pvd, 32768);
+            head.set(term, 32768 + ISO_SEC);
+            head.set(pt, 32768 + 2 * ISO_SEC);
+            head.set(ptm, 32768 + 3 * ISO_SEC);
+            head.set(root, 32768 + 4 * ISO_SEC);
+            return head;
+        }
+
+        function render() {
+            const ic = document.getElementById('dzIcon-iso'), tI = document.getElementById('dzTitle-iso');
+            if (!file) {
+                ic.style.display = 'block'; tI.textContent = t('iso.select'); tI.removeAttribute('data-custom');
+                opt.style.opacity = 0.5; opt.style.pointerEvents = 'none';
+                document.getElementById('resetBtn-iso').disabled = true;
+                document.getElementById('convertBtn-iso').disabled = true;
+                info('');
+                return;
+            }
+            ic.style.display = 'none';
+            tI.textContent = file.name; tI.setAttribute('data-custom', '');
+            opt.style.opacity = 1; opt.style.pointerEvents = 'auto';
+            document.getElementById('resetBtn-iso').disabled = false;
+            document.getElementById('convertBtn-iso').disabled = false;
+            detectIso().then(iso => {
+                detected = iso;
+                const mb = file.size / (1024 * 1024);
+                const sz = mb >= 1024 ? (file.size / (1024 * 1024 * 1024)).toFixed(2) + ' GB' : (mb < 1 ? file.size + ' B' : mb.toFixed(1) + ' MB');
+                info(sz + ' — ' + (iso ? t('iso.detectedIso') : t('iso.detectedWrap')));
+            });
+        }
+
+        function maxB() { return isPremium() ? MAX_B : PREM_FREE_MAX; }
+        function setFile(fl) {
+            const f = fl && fl[0];
+            if (!f) return;
+            if (!okFile(f, 'iso')) { showToast(t('toast.badFile')); return; }
+            if (f.size > maxB()) { showToast(isPremium() ? t('toast.isoBig') : t('toast.premLimit')); return; }
+            file = f;
+            render();
+        }
+
+        dz.onclick = () => inp.click();
+        inp.onchange = e => { setFile(e.target.files); inp.value = ''; };
+        dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+        dz.ondragleave = () => dz.classList.remove('over');
+        dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); setFile(e.dataTransfer.files); };
+        document.getElementById('resetBtn-iso').onclick = () => { file = null; detected = null; render(); };
+        document.getElementById('convertBtn-iso').onclick = async () => {
+            if (!file) return;
+            if (file.size > maxB()) { showToast(isPremium() ? t('toast.isoBig') : t('toast.premLimit')); return; }
+            const btn = document.getElementById('convertBtn-iso'), pC = document.getElementById('progress-container-iso'), pB = document.getElementById('progress-bar-iso'), pT = document.getElementById('progress-text-iso');
+            btn.disabled = true; btn.textContent = '...'; btn.setAttribute('data-custom', '');
+            pC.style.display = 'block'; pB.style.width = '10%';
+            try {
+                const iso = (detected === null) ? await detectIso() : detected;
+                const base = (file.name || 'image').replace(/\.[^.]+$/, '') || 'image';
+                if (iso) {
+                    pB.style.width = '100%'; pT.textContent = t('prog.done');
+                    await downloadBlob(file, base + '.iso');
+                } else {
+                    pT.textContent = t('prog.isoWrap'); pB.style.width = '50%';
+                    await new Promise(r => setTimeout(r, 30));
+                    const header = buildHeader(document.getElementById('isoVolName').value, isoIdent(file.name), file.size, new Date());
+                    const dataEnd = FILE_LBA * ISO_SEC + file.size;
+                    const padLen = (ISO_SEC - (dataEnd % ISO_SEC)) % ISO_SEC;
+                    const parts = [header, file];
+                    if (padLen) parts.push(new Uint8Array(padLen));
+                    pB.style.width = '90%';
+                    await downloadBlob(new Blob(parts, { type: 'application/x-iso9660-image' }), base + '.iso');
+                    pT.textContent = t('prog.done'); pB.style.width = '100%';
+                }
+            } catch (e) {
+                pT.textContent = '⚠ ' + (e && e.message ? e.message : e);
+                showToast(t('toast.error') + (e && e.message ? e.message : e));
+            }
+            btn.disabled = false; btn.textContent = t('common.convert'); btn.removeAttribute('data-custom');
+        };
+    }
+
+    // ===== PREMIUM =====
+    function premState() {
+        try { return JSON.parse(localStorage.getItem('scp_prem') || 'null'); } catch (e) { return null; }
+    }
+    function isPremium() {
+        const p = premState();
+        if (!p) return false;
+        if (!p.until) return true;
+        return p.until > Date.now();
+    }
+    function premLimitOk(f) {
+        if (!f) return true;
+        if (isPremium()) return true;
+        if (f.size > PREM_FREE_MAX) { showToast(t('toast.premLimit')); return false; }
+        return true;
+    }
+    function premRenderStatus() {
+        const el = document.getElementById('premStatus');
+        if (!el) return;
+        const p = premState();
+        if (p && isPremium()) {
+            if (p.plan === 'owner') el.textContent = t('prem.activeOwner');
+            else if (p.until) el.textContent = t('prem.active') + ' — ' + t('prem.activeUntil') + ' ' + new Date(p.until).toLocaleDateString();
+            else el.textContent = t('prem.active');
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+    function premRenderCoupons() {
+        const el = document.getElementById('coupon-list');
+        if (!el) return;
+        if (!COUPONS.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;margin:0;">' + t('coupon.empty') + '</p>'; return; }
+        el.innerHTML = '';
+        COUPONS.forEach(c => {
+            const d = document.createElement('div');
+            d.className = 'coupon-row';
+            d.innerHTML = '<span class="coupon-code">' + c.code + '</span><span class="coupon-desc">' + (LANG === 'en' ? (c.en || c.it) : c.it) + '</span>';
+            d.onclick = () => { try { navigator.clipboard.writeText(c.code); showToast(t('toast.copied')); } catch (e) { } };
+            el.appendChild(d);
+        });
+    }
+    async function premActivate() {
+        const inp = document.getElementById('premKeyInput');
+        const key = (inp.value || '').trim();
+        if (!key) { showToast(t('toast.premKeyReq')); return; }
+        try {
+            const r = await fetch(PREM_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: key })
+            });
+            const j = await r.json();
+            if (j.ok) {
+                localStorage.setItem('scp_prem', JSON.stringify({ until: j.until || 0, plan: j.plan, ts: Date.now() }));
+                showToast(t('toast.premOk'));
+                premRenderStatus();
+                inp.value = '';
+            } else {
+                showToast(j.error === 'expired' ? t('toast.premExp') : t('toast.premBad'));
+            }
+        } catch (e) { showToast(t('toast.error') + ((e && e.message) || e)); }
+    }
+    function premInit() {
+        const bm = document.getElementById('premBuyM'), by = document.getElementById('premBuyY');
+        if (bm) bm.onclick = () => window.open(PREM_CHECKOUT_M, '_blank');
+        if (by) by.onclick = () => window.open(PREM_CHECKOUT_Y, '_blank');
+        const btn = document.getElementById('premActivateBtn'), inp = document.getElementById('premKeyInput');
+        if (btn) btn.onclick = premActivate;
+        if (inp) inp.onkeydown = e => { if (e.key === 'Enter') premActivate(); };
+        premRenderStatus();
+        premRenderCoupons();
+    }
+    premInit();
+
     // ===== RICERCA UNIVERSALE (LENTA) =====
-    const SCAT_ICON = { img: '🖼️', video: '🎬', audio: '🎵', pdf: '📄' };
+    const SCAT_ICON = { img: '🖼️', video: '🎬', audio: '🎵', pdf: '📄', iso: '💿' };
     const FMT_ALIAS = { jpeg: 'jpg', jpe: 'jpg' };
     const SEARCH_STOP = ['to', 'in', 'into', 'di', 'da', 'del', 'the', 'a', 'an', 'for', 'con', 'converter', 'convert', 'conversione', 'conversion'];
     let searchIndex = [], focusState = null;
@@ -2291,6 +2971,7 @@
             kw: ['pdf', 'img', 'image', 'images', 'immagini', 'immagine', 'foto', 'picture', 'scanner', 'gallery', 'jpg', 'png', 'webp'] });
         searchIndex.push({ cat: 'pdf', to: 'PDF', sel: null, val: 'txt', sub: null,
             kw: ['pdf', 'txt', 'text', 'testo', 'documento', 'document', 'md', 'csv', 'lettera', 'note'] });
+        // ISO nascosta: voce ricerca disattivata
     }
 
     function searchMatch(q) {
@@ -2328,6 +3009,7 @@
             '<span class="si-icon">' + SCAT_ICON[r.it.cat] + '</span>' +
             '<span class="si-label">' + (r.it.cat === 'pdf'
                 ? t(r.it.val === 'txt' ? 'pdf.modeTxt' : 'pdf.modeImg')
+                : r.it.cat === 'iso' ? t('feat.iso')
                 : searchCatName(r.it.cat) + ' → ' + r.it.to) + '</span>' +
             '</div>').join('');
     }
@@ -2350,6 +3032,10 @@
         const item = focusState;
         focusState = null;
         if (item.cat === 'pdf') {
+            document.getElementById('focusBack').classList.remove('show');
+            return;
+        }
+        if (item.cat === 'iso') {
             document.getElementById('focusBack').classList.remove('show');
             return;
         }
@@ -2380,6 +3066,15 @@
             const fbP = document.getElementById('focusBack');
             secP.insertBefore(fbP, secP.querySelector('.main-card'));
             fbP.classList.add('show');
+            return;
+        }
+        if (item.cat === 'iso') {
+            switchTab('iso');
+            focusState = item;
+            const secI = document.getElementById('tab-iso');
+            const fbI = document.getElementById('focusBack');
+            secI.insertBefore(fbI, secI.querySelector('.main-card'));
+            fbI.classList.add('show');
             return;
         }
         const sec = document.getElementById('tab-' + item.cat);
