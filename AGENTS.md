@@ -37,37 +37,35 @@ stessa versione in `version.json` (`version` **e** `apk_version`) e in
 `config.xml` (version + versionCode). Ciclo completo nell'ordine:
 bump `config.xml` → `cordova build android --release` → upload APK sul
 release tag `apk` **PRIMA** del push → `version.json` (entrambe le versioni
-+ build +1 + changes) → commit → push → deploy → notify.
-Niente rilasci del sito con un numero diverso dall'APK: l'utente riceve la
-notifica, controlla l'app e non trova l'aggiornamento (si pensa a un bug).
-Eccezione consentita: fix solo sito → `apk_version` invariato e title della
-push automaticamente "novità" (gestito da `functions/notify.js`, chiave KV
-`notify_apk`).
++ build +1 + changes) → commit → push → deploy.
+Niente rilasci del sito con un numero diverso dall'APK: l'utente controlla
+l'app e non trova l'aggiornamento (si pensa a un bug).
+Il rilascio **non manda push** (vedi REGOLA NOTIFICHE).
 
-## REGOLA NOTIFICHE (obbligatoria)
+## REGOLA NOTIFICHE (obbligatoria, aggiornata 2026-10-29)
 
-**Ogni modifica visibile all'utente (sito o app) deve essere notificata con una push.**
-"Visibile all'utente" = index.html, style.css, funzionalità, correzioni, versioni.
-Non lo è = documenti interni come questo file.
+**Le push servono SOLO per problemi dell'app o manutenzione.**
+Vietato mandare push per: nuove versioni, aggiornamenti, "novità", rilasci.
 
-Checklist da eseguire SEMPRE, nell'ordine:
+`functions/notify.js` non deve più inviare nulla quando cambia `version.json`
+(`{"check":true}` aggiorna solo lo stato in KV, risponde sempre `sent:false`).
+Le uniche push ammesse, con header `x-notify-secret`:
+
+- `{"status":"maintenance"}` → "🛠 Manutenzione in corso"
+- `{"status":"issue"}` → "⚠️ Problema in corso"
+- `{"status":"ok"}` → "✅ Servizio ripristinato"
+- `{title, body}` → invio libero (solo per comunicazioni di servizio)
+
+Checklist di rilascio (resta valida, **senza** punto push):
 
 1. `version.json` → aumentare `"build"` di 1 e aggiornare `"changes"`
-   (è il testo che gli utente leggeranno nella notifica).
-2. Se è una nuova versione → aggiornare `version` e la voce NEWS in `index.html`;
-   `apk_version` solo se c'è un nuovo APK da rilasciare (altrimenti in app
-   compare il modal di aggiornamento verso un APK inesistente).
+   (testo mostrato nella home / novità, **non** nella push).
+2. Se è una nuova versione → aggiornare `version` e la voce NEWS in `index.html`
+   **e** in `C:\My project\studiopro\www\index.html` (ora `D:\PNX\studiopro\www`);
+   `apk_version` solo se c'è un nuovo APK.
 3. `git add` + `git commit` + `git push origin main`.
 4. Deploy: `npx wrangler@latest pages deploy . --project-name studioconverterpro --commit-dirty=true`
-5. Trigger notifica: `POST https://studioconverterpro.pages.dev/notify`
-   con body `{"check":true}` (nessun secret) → deve rispondere `"sent":true`.
-   `"sent":false` significa che `build` non è cambiato → tornare al punto 1.
-6. Controllo: una seconda chiamata deve dare `"sent":false` (antiduplicati OK).
-
-**Il rilascio NON è completo finché il punto 5 non risponde `sent:true`.**
-Non passare ad altro (né riepilogo all'utente, né "lavoro finito") prima
-di aver eseguito tutti i punti 1-6: deploy e notifica sono obbligatori
-anche per un piccolo fix.
+5. **Nessuna chiamata di notifica** per il rilascio (regola nuova).
 
 Stato attuale della notifica in KV (`notify_state`): deve coincidere con
 `version#build` di `version.json`.

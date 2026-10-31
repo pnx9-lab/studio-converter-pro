@@ -1500,3 +1500,10 @@ body {
     }
     html { scroll-behavior: auto; }
 }
+
+/* --- TEMA: 4 pulsanti (Bianco / Nero / Sistema / Predefinito) --- */
+#themeSwitch { flex-wrap: wrap; justify-content: flex-end; }
+#themeSwitch button { padding: 7px 10px; white-space: nowrap; }
+@media (max-width: 380px) {
+    #themeSwitch button { padding: 6px 8px; font-size: 11px; }
+}

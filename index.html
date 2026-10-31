@@ -15,8 +15,11 @@
         (function () {
             var th = null;
             try { th = new URLSearchParams(location.search).get('theme'); } catch (e) { }
-            if (th !== 'light' && th !== 'dark') {
+            if (th !== 'light' && th !== 'dark' && th !== 'system') {
                 try { th = localStorage.getItem('theme'); } catch (e) { th = null; }
+            }
+            if (th === 'system') {
+                try { th = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (e) { th = null; }
             }
             if (th === 'light' || th === 'dark') document.documentElement.setAttribute('data-theme', th);
         })();
@@ -417,8 +420,14 @@
                 <div class="lang-switch" id="themeSwitch">
                     <button type="button" data-theme-btn="light" onclick="setTheme('light')" data-i18n="set.themeLight">⬜ Bianco</button>
                     <button type="button" data-theme-btn="dark" onclick="setTheme('dark')" data-i18n="set.themeDark">⬛ Nero</button>
+                    <button type="button" data-theme-btn="system" onclick="setTheme('system')" data-i18n="set.themeSystem">🌗 Sistema</button>
                     <button type="button" data-theme-btn="default" onclick="setTheme('default')" data-i18n="set.themeDefault">🟣 Predefinito</button>
                 </div>
+            </div>
+
+            <div class="setting-row" id="versionRow">
+                <span class="setting-label"><span class="gicon">🏷️</span> <span data-i18n="set.version">Versione</span></span>
+                <div class="setting-actions"><span class="setting-value" id="appVersionValue">—</span></div>
             </div>
 
             <div class="setting-row">
@@ -633,7 +642,7 @@
     </div>
 
 <script>
-    const CURRENT_VERSION = "6.2.1";
+    const CURRENT_VERSION = "6.3.0";
     const VERSION_URL = "version.json";
     // In app Android il controllo aggiornamenti va a GitHub (raw): nessuna dipendenza dal sito
     const UPDATE_URL_GH = "https://raw.githubusercontent.com/pnx9-lab/studio-converter-pro/main/version.json";
@@ -764,6 +773,8 @@
             "set.theme": "Tema",
             "set.themeLight": "⬜ Bianco",
             "set.themeDark": "⬛ Nero",
+            "set.themeSystem": "🌗 Sistema",
+            "set.version": "Versione",
             "set.themeDefault": "🟣 Predefinito",
             "whatsnew.title": "Novità della versione",
             "set.folder": "Cartella di salvataggio",
@@ -903,6 +914,8 @@
             "set.theme": "Theme",
             "set.themeLight": "⬜ White",
             "set.themeDark": "⬛ Black",
+            "set.themeSystem": "🌗 System",
+            "set.version": "Version",
             "set.themeDefault": "🟣 Default",
             "whatsnew.title": "What's new in version",
             "set.folder": "Save folder",
@@ -967,31 +980,61 @@
         saveProfile();
     }
 
-    // --- TEMA (chiaro / nero / predefinito) ---
+    // --- TEMA (chiaro / nero / sistema / predefinito) ---
+    function systemTheme() {
+        try { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (e) { return 'dark'; }
+    }
     function themePref() {
         var th = null;
         try { th = new URLSearchParams(location.search).get('theme'); } catch (e) { }
-        if (th !== 'light' && th !== 'dark') {
+        if (th !== 'light' && th !== 'dark' && th !== 'system') {
             try { th = localStorage.getItem('theme'); } catch (e) { th = null; }
         }
-        return (th === 'light' || th === 'dark') ? th : 'default';
+        return (th === 'light' || th === 'dark' || th === 'system') ? th : 'default';
     }
     function applyTheme(t) {
         var el = document.documentElement;
-        if (t === 'light' || t === 'dark') el.setAttribute('data-theme', t);
+        var resolved = (t === 'system') ? systemTheme() : t;
+        if (resolved === 'light' || resolved === 'dark') el.setAttribute('data-theme', resolved);
         else el.removeAttribute('data-theme');
         document.querySelectorAll('[data-theme-btn]').forEach(function (b) {
             b.classList.toggle('active', b.getAttribute('data-theme-btn') === t);
         });
     }
     function setTheme(t) {
-        var v = (t === 'light' || t === 'dark') ? t : 'default';
+        var v = (t === 'light' || t === 'dark' || t === 'system') ? t : 'default';
         applyTheme(v);
         try { if (v === 'default') localStorage.removeItem('theme'); else localStorage.setItem('theme', v); } catch (e) { }
     }
     applyTheme(themePref());
+    // modalita' "Sistema": segue lo sfondo del dispositivo (solo scuro/chiaro)
+    try {
+        var mqSys = window.matchMedia('(prefers-color-scheme: dark)');
+        var onSysChange = function () { if (themePref() === 'system') applyTheme('system'); };
+        if (mqSys.addEventListener) mqSys.addEventListener('change', onSysChange);
+        else if (mqSys.addListener) mqSys.addListener(onSysChange);
+    } catch (e) { }
+    // versione corrente mostrata nelle Impostazioni
+    try {
+        var verEl = document.getElementById('appVersionValue');
+        if (verEl) verEl.textContent = 'v' + CURRENT_VERSION;
+    } catch (e) { }
 
     const NEWS = [
+        { version: "6.3.0", date: "2026-10-30", items: {
+            it: [
+                "🌗 Nuovo tema Sistema: segue lo sfondo chiaro/scuro del dispositivo",
+                "🏷️ La versione dell'app ora e' visibile nelle Impostazioni",
+                "📱 App Android: salvataggio nella cartella scelta e aggiornamento in-app di nuovo funzionanti",
+                "⚠️ App Android: nuova firma digitale. Se hai la versione vecchia, reinstalla una volta"
+            ],
+            en: [
+                "🌗 New System theme: follows your device light/dark background",
+                "🏷️ The app version is now shown in Settings",
+                "📱 Android app: saving into the chosen folder and in-app update working again",
+                "⚠️ Android app: new signing key. If you have the old version, reinstall once"
+            ]
+        }},
         { version: "6.2.1", date: "2026-10-14", items: {
             it: [
                 "📰 Fix: le novità 6.2.0 ora si vedono anche in app"

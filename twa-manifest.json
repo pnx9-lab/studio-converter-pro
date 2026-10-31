@@ -17,8 +17,8 @@
     "path": "./android.keystore",
     "alias": "android"
   },
-  "appVersionName": "5.2.5",
-  "appVersionCode": 525,
+  "appVersionName": "6.3.0",
+  "appVersionCode": 60300,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://studioconverterpro.pages.dev/manifest.json",

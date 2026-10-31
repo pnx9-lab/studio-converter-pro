@@ -1,10 +1,16 @@
 // Notifiche push (FCM v1) al tema "aggiornamenti".
 //
-// 1) POST /notify  {"check": true}            -> controllo automatico: se version.json
-//    (version o build) è cambiato rispetto all'ultimo invio, manda la push.
-//    Nessun secret richiesto: invia al massimo una volta per cambiamento.
-// 2) POST /notify  {title, body, ...}          -> invio libero, richiede
-//    header "x-notify-secret" == env.NOTIFY_SECRET
+// REGOLA (2026-10-29): le push servono SOLO per problemi dell'app o manutenzione.
+// NON si invia nulla per nuove versioni / aggiornamenti / novità.
+//
+// 1) POST /notify  {"check": true}                   -> NESSUNA push: aggiorna solo lo
+//    stato in KV (retrocompatibile con la chiamata del sito).
+// 2) POST /notify  {"status":"maintenance"}          -> push "Manutenzione in corso"
+//    {"status":"issue"}                              -> push "Problema in corso"
+//    {"status":"ok"}                                 -> push "Servizio ripristinato"
+//    (testo personalizzabile con "body"/"message")
+// 3) POST /notify  {title, body}                     -> invio libero
+//    Tutti richiedono header "x-notify-secret" == env.NOTIFY_SECRET
 //
 // Credenziali Firebase: env.FIREBASE_SERVICE_ACCOUNT (JSON del service account)
 
@@ -12,6 +18,13 @@ const TOPIC = 'aggiornamenti';
 const PROJECT_ID = 'studio-converter-pro';
 const VERSION_URL = 'https://studioconverterpro.pages.dev/version.json';
 const STATE_KEY = 'notify_state';
+
+// Testi pronti per le push di stato (le uniche che devono partire)
+const STATUS_PUSH = {
+  maintenance: { title: '🛠 Manutenzione in corso', body: 'Stiamo lavorando per ripristinare il servizio. Riprova tra poco.' },
+  issue: { title: '⚠️ Problema in corso', body: 'Stiamo verificando un problema. Riprova tra poco.' },
+  ok: { title: '✅ Servizio ripristinato', body: 'Tutto torna a funzionare. Grazie per la pazienza!' }
+};
 
 function json(body, status) {
   return new Response(JSON.stringify(body), {
@@ -123,7 +136,8 @@ async function sendPush(env, opts) {
   return out.name || null;
 }
 
-// Controllo automatico: notifica solo se version/build sono cambiati
+// Controllo automatico: NON invia più push. Aggiorna solo lo stato in KV.
+// (regola 2026-10-29: le push servono solo per problemi/manutenzione, mai per gli aggiornamenti)
 async function handleCheck(env) {
   if (!env.CREDS) return json({ ok: false, error: 'binding CREDS mancante' }, 500);
 
@@ -140,42 +154,9 @@ async function handleCheck(env) {
   if (!version) return json({ ok: false, error: 'versione mancante' }, 502);
 
   const now = version + '#' + build;
-  const prev = await env.CREDS.get(STATE_KEY);
-
-  if (prev === null) {
-    await env.CREDS.put(STATE_KEY, now);
-    return json({ ok: true, sent: false, first: true, state: now });
-  }
-  if (prev === now) return json({ ok: true, sent: false, state: now });
-
-  // Title: "Nuova versione X" solo quando cambia davvero l'APK (apk_version);
-  // un rilascio solo sito (version cambia, apk_version no) è una novità, non un aggiornamento app.
-  const apkNow = String(data.apk_version || '') || version;
-  const prevApk = await env.CREDS.get('notify_apk');
-  const apkChanged = prevApk != null && apkNow !== prevApk;
-  const title = apkChanged
-    ? ('Nuova versione ' + apkNow + ' disponibile!')
-    : ('Studio Converter Pro ' + version + ' - novità');
-  const text = String(data.changes || (apkChanged
-    ? 'Scarica subito la versione ' + apkNow + '!'
-    : 'Ci sono novità sul sito. Scoprile!')).slice(0, 300);
-
-  try {
-    const name = await sendPush(env, {
-      title: title,
-      body: text,
-      version: version,
-      build: build,
-      url: data.download_url || ''
-    });
-    await env.CREDS.put(STATE_KEY, now);
-    await env.CREDS.put('notify_apk', apkNow);
-    return json({ ok: true, sent: true, version: version, build: build, name: name });
-  } catch (e) {
-    const detail = String((e && (e.message || e)) || 'unknown').slice(0, 400);
-    console.error('notify-check error:', detail);
-    return json({ ok: false, error: 'send', detail: detail }, e.status || 500);
-  }
+  await env.CREDS.put(STATE_KEY, now);
+  await env.CREDS.put('notify_apk', String(data.apk_version || '') || version);
+  return json({ ok: true, sent: false, state: now, note: 'update push disabilitate' });
 }
 
 export async function onRequestPost(context) {
@@ -197,6 +178,19 @@ export async function onRequestPost(context) {
   if (given !== secret && auth !== secret) return json({ ok: false, error: 'secret' }, 401);
 
   try {
+    // --- push di stato: manutenzione / problema / ripristino ---
+    const st = String(body.status || '').toLowerCase();
+    if (st) {
+      const preset = STATUS_PUSH[st];
+      if (!preset) return json({ ok: false, error: 'status non valido (maintenance|issue|ok)' }, 400);
+      const name = await sendPush(env, {
+        title: body.title || preset.title,
+        body: body.body || body.message || preset.body,
+        url: body.url || ''
+      });
+      return json({ ok: true, sent: true, status: st, name: name, topic: TOPIC });
+    }
+
     const name = await sendPush(env, {
       title: body.title || 'Studio Converter Pro',
       body: body.body || body.message || '',

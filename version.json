@@ -1,9 +1,9 @@
 {
-  "version": "6.2.1",
-  "apk_version": "6.2.1",
-  "apk_from": "6.1.1",
-  "build": 12,
-  "changes": "6.2.1: le novità si vedono anche in app + aggiornamento app consigliato",
+  "version": "6.3.0",
+  "apk_version": "6.3.0",
+  "apk_from": "6.2.1",
+  "build": 13,
+  "changes": "6.3.0: nuovo tema Sistema (segue chiaro/scuro del telefono) e versione visibile nelle Impostazioni; app Android: salvataggio nella cartella scelta e aggiornamento in-app ripristinati. Nuova firma: reinstallare una volta",
   "apk_url": "https://github.com/pnx9-lab/studio-converter-pro/releases/download/apk/studiopro.apk",
   "download_url": "https://github.com/pnx9-lab/studio-converter-pro/releases"
 }

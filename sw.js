@@ -1,4 +1,4 @@
-const CACHE_NAME = 'converter-pro-cache-v6.2.1';
+const CACHE_NAME = 'converter-pro-cache-v6.3.0';
 const ASSETS = [
   '/',
   '/index.html',
